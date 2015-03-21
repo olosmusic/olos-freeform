@@ -4,12 +4,12 @@
 <link rel="import" href="../lens-data-table/lens-data-table.html">
 
 
-<link rel="import" href="../lenses-component-list/lenses-component-list.html">
+<link rel="import" href="../olos-component-list/olos-component-list.html">
 
 
-<polymer-element name="lenses-freeform" attributes="">
+<polymer-element name="olos-freeform" attributes="">
   <template>
-    <link rel="stylesheet" href="lenses-freeform.css">
+    <link rel="stylesheet" href="olos-freeform.css">
 
     <core-icon-button id="showDataBtn" class="active" icon="view-module" on-click="{{showDataBtn}}" alt="show component data">
       <span>show component input/output</span>
@@ -17,7 +17,7 @@
 
 
     <label class="component-list-label">Drag components into canvas:</label>
-    <lenses-component-list id="component_list"></lenses-component-list>
+    <olos-component-list id="component_list"></olos-component-list>
 
     <div id="input_preview" class="data-preview {{{visible: _showDataTable && _selElement.input && _selElement.input.length>0 } | tokenList }}">
       <template if="{{_showDataTable && _selElement.input && _selElement.input.length>0}}">
@@ -91,6 +91,9 @@
     
   </template>
   <script>
+
+    var audioContext = new AudioContext();
+
     Polymer({
 
       _elements: [],
@@ -217,7 +220,7 @@
 
         var dataTransfer = e.dataTransfer.getData('text/plain');
 
-        //data added by lenses-component-list //TODO make better
+        //data added by olos-component-list //TODO make better
         if(dataTransfer && dataTransfer.length>0) {
           var dataSeg = dataTransfer.split(',');
 
