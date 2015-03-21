@@ -26,7 +26,7 @@
       </template>
     </div>
 
-    <div id="container"  on-drop="{{droppedInContainer}}" on-dragover="{{draggedOverContainer}}">
+    <div id="container" on-drop="{{droppedInContainer}}" on-dragover="{{draggedOverContainer}}">
       <svg id="svg"></svg>
 
 
@@ -94,6 +94,8 @@
 
     // GLOBAL
     var audioContext = new AudioContext();
+
+    var _dragObj = {};
 
     Polymer({
 
@@ -539,6 +541,7 @@
 
         deleteConnection: function(e, details, selection) {
           e.stopPropagation();
+
           if(confirm('Are you sure you want to delete the highlighted connection?')) {
 
             var wrapper = null;
@@ -548,9 +551,36 @@
               }
             } 
             var elementInsideId = wrapper.getAttribute('component-id');
+
+          // var srcClone = {id: source.id, name: source.name, element: source.element};
+          // var targetClone = {id: target.id, name: target.name, element: target.element};
+            console.log(e);
+
+            // -- or --
+            // delete all connections / reconnect everything
+            var srcNode, srcElem
+            for (var i = 0; i < this._connections.length; i++) {
+              if (this._connections[i].target.id === elementInsideId ) {
+                srcNode = this._connections[i].source.field;
+                srcElem = this._connections[i].source.element;
+                srcElem[srcNode].disconnect();
+              }
+            }
+
+            // remove connection with this id
             this._connections = this._connections.filter(function(connection) {
               return connection.target.id!==elementInsideId;
             });
+
+            // if srcNode was connected to any other nodes, re-connect them
+            for (var j = 0; j < this._connections.length; j++) {
+              var src = this._connections[j].source;
+              if (src.element === srcElem && src.field === srcNode) {
+                var dstNode = this._connections[j].target.field;
+                var dstElem = this._connections[j].target.element;
+                srcElem[srcNode].connect(dstElem[dstNode]);
+              }
+            }
 
             var marker = e.path[1]; 
             marker.classList.remove('highlighted');
@@ -584,8 +614,8 @@
 
 
       /**
-       * The functions which sets the connection (two way binging) between two element attrubutes
-       * There is not really a sourc/target distinction in the observer since it is a two way binging (in theory)
+       * The functions which sets the connection (two way binding) between two element attrubutes
+       * There is not really a source/target distinction in the observer since it is a two way binding (in theory)
        * but the distinction is conceptual and in UI.
        * @param  {[type]} source      Source element
        * @param  {[type]} sourceField The attribute to connect from source element
@@ -594,18 +624,12 @@
        * @return {None}             
        */
       _connectAttributes: function(source, sourceField, target, targetField) {
-        console.log(source);
-        console.log(sourceField);
-        console.log(target);
-        console.log(targetField);
-
-        this.makeConnection(source.element, sourceField, target.element, targetField);
 
         var self = this;
 
         //find the index of connection which has the same target
         var connWithSameTargetIndex = self._connections.reduce(function(value, conn, index) {
-            if (conn.target.id===target.id && conn.target.field===targetField) {
+            if (conn.target.id===target.id && conn.target.field===targetField && conn.source.id===source.id && conn.source.field === conn.sourceField) {
               return index;
             }
 
@@ -617,7 +641,7 @@
 
 
         if (source === target){ //if a bubble was dropped on itself
-          alert('You cannot make a connection within the same element');
+          console.log('You cannot make a connection within the same element');
           return false;
         } else { 
 
@@ -634,17 +658,19 @@
           var targetClone = {id: target.id, name: target.name, element: target.element};
 
 
-          
-          target.element[targetField] = source.element[sourceField]; 
+          // target.element[targetField] = source.element[sourceField]; 
 
           targetClone.field = targetField;
+          srcClone.field = sourceField;
 
           //self.updateConnections();
           
           //push the connections anyways because it will be deleted above.
           self._connections.push({source: srcClone, target: targetClone});
 
-          
+          // make the actual connection
+          this.makeConnection(source.element, sourceField, target.element, targetField);
+
           return true;
         }
 
@@ -915,33 +941,32 @@
           var aLine = document.createElementNS('http://www.w3.org/2000/svg', 'path'); 
           var path = this._createBezierPath(startX, startY, endX, endY, handleOffsetX);
 
-          aLine.setAttribute('d',path);
-          aLine.setAttribute('stroke', '#555');// conn.source.color);
-          aLine.setAttribute('fill', 'none');
+          aLine.setAttributeNS(null, 'd',path);
+          aLine.setAttributeNS(null, 'stroke', '#555');// conn.source.color);
+          aLine.setAttributeNS(null, 'stroke-width', '5');
+          aLine.setAttributeNS(null, 'fill', 'transparent');
           if(id) {
-            aLine.setAttribute('id', id);
+            aLine.setAttributeNS(null, 'id', id);
           }
 
           if(highlighted) {
             aLine.classList.add('highlighted');
           }
           
-
+          _dragObj.connectorShape = aLine;
           this.$.svg.appendChild(aLine);
 
       },
 
       //// olos environment
 
-      makeConnection: function(src, srcPort, dst, dstPort) {
-        console.log('making a connection');
+      makeConnection: function(src, srcPort, dst, dstPort, svgPath) {
+
         var connectorShape = {};
 
-        // if (_dragObj && _dragObj.connectorShape) {
-        //   connectorShape = _dragObj.connectorShape;
-        // }
-
-        console.log(src[srcPort]);
+        if (_dragObj && _dragObj.connectorShape) {
+          connectorShape = _dragObj.connectorShape;
+        }
 
         // Put an entry into the source's outputs
         if (!src.outputConnections)
@@ -956,8 +981,9 @@
         src.outputConnections.push(connector);
 
         // Put an entry into the destinations's inputs
-        if (!dst.inputConnections)
+        if (!dst.inputConnections){
           dst.inputConnections = new Array();
+        }
         connector = new Object();
         connector.line = connectorShape;
         connector.source = src;
@@ -969,8 +995,8 @@
 
         connectorShape.inputConnection = connector;
         connectorShape.destination = dst;
-        connectorShape.onclick = deleteConnection;
-
+        connectorShape.addEventListener('onclick',deleteWithClick);
+        console.log(connectorShape);
         connectorShape = null;
 
         // save connections to component source and destination
@@ -984,14 +1010,13 @@
           // dst[dstPort.label] = src[srcPort.label];
         }
 
-      // called by connectorShape object, this = the instance of that object when it deletes itself.
-      function deleteConnection() {
-        console.log('delete');
-        // var connections = this.destination.inputConnections;
-        // breakSingleInputConnection( connections, connections.indexOf( this.inputConnection ) );
+        // called by connectorShape object, this = the instance of that object when it deletes itself.
+        function deleteWithClick() {
+          console.log('delete');
+          var connections = this.destination.inputConnections;
+          breakSingleInputConnection( connections, connections.indexOf( this.inputConnection ) );
+        }
       }
-      }
-
 
     });
   </script>
