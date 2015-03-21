@@ -6,6 +6,7 @@
 
 <link rel="import" href="../olos-component-list/olos-component-list.html">
 
+<link rel="import" href="../olos-p5-editor/olos-p5-editor.html">
 
 <polymer-element name="olos-freeform" attributes="">
   <template>
@@ -18,6 +19,8 @@
 
     <label class="component-list-label">Drag components into canvas:</label>
     <olos-component-list id="component_list"></olos-component-list>
+    <olos-p5-editor id="p5"></olos-p5-editor>
+
 
     <div id="input_preview" class="data-preview {{{visible: _showDataTable && _selElement.input && _selElement.input.length>0 } | tokenList }}">
       <template if="{{_showDataTable && _selElement.input && _selElement.input.length>0}}">
@@ -26,9 +29,9 @@
       </template>
     </div>
 
-    <div id="container" on-drop="{{droppedInContainer}}" on-dragover="{{draggedOverContainer}}">
-      <svg id="svg"></svg>
+    <div id="container" on-mousedown="{{mousedn}}" on-drop="{{droppedInContainer}}" on-dragover="{{draggedOverContainer}}">
 
+      <svg id="svg"></svg>
 
       <!-- Components and connector dots --> 
       <!--<template if="{{_positioned}}">-->
@@ -67,8 +70,8 @@
               <template if="{{el.element.publish | _checkForOutputAttr}}">
                 <div id="{{index}}"  class="{{el.element.id}} arrow out-arrow" 
                   on-drag="{{dragOutArrow}}" on-dragstart="{{dragOutArrowStart}}" on-dragend="{{dragOutArrowEnd}}"  
-                   on-click="{{arrowClicked}}" draggable="true">
-                  <div class="outputMarker"></div>
+                   on-click="{{arrowClicked}}" draggable="true" style="z-index:100">
+                  <div class="outputMarker" style="z-index:101"></div>
                 </div>
               </template>
               
@@ -79,7 +82,8 @@
           
           </div>
         </template>
-    </div> 
+
+    </div> <!-- end container-->
 
     <div id="output_preview" class="data-preview {{{visible: _showDataTable && _selElement.output && _selElement.output.length>0 } | tokenList }}">
       <template if="{{_showDataTable && _selElement.output && _selElement.output.length>0}}">
@@ -409,7 +413,7 @@
 
           this.draggedEl = selection;
           //to stop wrapper drag to be called
-          e.stopPropagation();
+          // e.stopPropagation();
 
           if(!this.svgTop || !this.svgLeft) {
 
@@ -426,11 +430,10 @@
           // create temp bezier
           this._addBezierPath( this.startPointX , this.startPointY , this.startPointX , this.startPointY , 70, 'temp_path');
           //this._addBezierPath( event.x0 , event.y0 , event.x0 , event.y0 , 70, 'temp_path');
-
         },
 
         dragOutArrow: function(e, details, selection) {
-
+          console.log('drag it');
           var tempPath = this.shadowRoot.querySelector('#temp_path');
 
           // the last dragMove call passes e.x=0 and e.y=0 which causes neg x,y values. this if avoids that
@@ -516,7 +519,9 @@
 
             var marker = e.path[0];
             var bezierCssPath = '#container #svg #'+connection[0].source.id+'-'+connection[0].target.id;
+
             var bezier = this.shadowRoot.querySelector(bezierCssPath);
+            this.bezier = bezier;
 
             if(connection[0].highlighted) {
               connection[0].highlighted = false;
@@ -534,6 +539,8 @@
 
             }
 
+            // this.bezier = null;
+
           }
 
 
@@ -541,56 +548,66 @@
 
         deleteConnection: function(e, details, selection) {
           e.stopPropagation();
+          var elementInsideId;
 
-          if(confirm('Are you sure you want to delete the highlighted connection?')) {
-
+          // figure out the source
+          var src;
+          if (this.bezier) {
+            var splitID = this.bezier.id.split('-');
+            src = splitID[0]+'-'+splitID[1]+'-'+splitID[2];
+            console.log(src);
+            elementInsideId = splitID[3] + '-' + splitID[4] + '-' + splitID[5];
+          }
+          else {
             var wrapper = null;
             for(var i = 0; i< e.path.length && !wrapper; i++) {
               if(e.path[i].classList.contains('wrapper')) {
                 wrapper = e.path[i];
               }
-            } 
-            var elementInsideId = wrapper.getAttribute('component-id');
-
-          // var srcClone = {id: source.id, name: source.name, element: source.element};
-          // var targetClone = {id: target.id, name: target.name, element: target.element};
-            console.log(e);
-
-            // -- or --
-            // delete all connections / reconnect everything
-            var srcNode, srcElem
-            for (var i = 0; i < this._connections.length; i++) {
-              if (this._connections[i].target.id === elementInsideId ) {
-                srcNode = this._connections[i].source.field;
-                srcElem = this._connections[i].source.element;
-                srcElem[srcNode].disconnect();
-              }
             }
-
-            // remove connection with this id
-            this._connections = this._connections.filter(function(connection) {
-              return connection.target.id!==elementInsideId;
-            });
-
-            // if srcNode was connected to any other nodes, re-connect them
-            for (var j = 0; j < this._connections.length; j++) {
-              var src = this._connections[j].source;
-              if (src.element === srcElem && src.field === srcNode) {
-                var dstNode = this._connections[j].target.field;
-                var dstElem = this._connections[j].target.element;
-                srcElem[srcNode].connect(dstElem[dstNode]);
-              }
-            }
-
-            var marker = e.path[1]; 
-            marker.classList.remove('highlighted');
-
-
-
-            this._drawConnections();
-
-
+            elementInsideId = wrapper.getAttribute('component-id');
           }
+          console.log(elementInsideId);
+          console.log(e);
+
+          // -- or --
+          // delete all connections / reconnect everything
+          var srcNode, srcElem;
+          for (var i = 0; i < this._connections.length; i++) {
+            console.log(this._connections[i].target.id);
+            console.log(elementInsideId);
+            console.log(this._connections[i].source.id);
+            console.log(src);
+
+            if (this._connections[i].target.id === elementInsideId && this._connections[i].source.id === src) {
+              srcNode = this._connections[i].source.field;
+              srcElem = this._connections[i].source.element;
+              console.log('disconnecting');
+              srcElem[srcNode].disconnect();
+            }
+          }
+
+          // remove connection with this id
+          this._connections = this._connections.filter(function(connection) {
+            return connection.target.id!==elementInsideId;
+          });
+
+          // if srcNode was connected to any other nodes, re-connect them
+          for (var j = 0; j < this._connections.length; j++) {
+            var src = this._connections[j].source;
+            if (src.element === srcElem && src.field === srcNode) {
+              var dstNode = this._connections[j].target.field;
+              var dstElem = this._connections[j].target.element;
+              srcElem[srcNode].connect(dstElem[dstNode]);
+            }
+          }
+
+          var marker = e.path[1]; 
+          console.log(marker);
+          marker.classList.remove('highlighted');
+
+          this._drawConnections();
+
         },
 
 
@@ -686,7 +703,7 @@
         var bezierCurveX = 70;  // the larger the value the smoother the curve
 
 
-        //clear all paths. since it is not done offten it is fine to do it in a not optimized way
+        //clear all paths. since it is not done often it is fine to do it in a not optimized way
         self.$.svg.innerHTML = '';
 
         for (var i = 0; i < self._connections.length; i++) {
@@ -864,7 +881,7 @@
 
 
       /**
-       * Checks if a componenet has output attributes (any attribute which is named input*)
+       * Checks if a componenet has input attributes (any attribute which is named input*)
        * @param  {Object} published Object containing all published attributes
        * @return {Object}           list of attributes that are input.
        */
@@ -944,7 +961,9 @@
           aLine.setAttributeNS(null, 'd',path);
           aLine.setAttributeNS(null, 'stroke', '#555');// conn.source.color);
           aLine.setAttributeNS(null, 'stroke-width', '5');
-          aLine.setAttributeNS(null, 'fill', 'transparent');
+          aLine.setAttributeNS(null, 'fill-opacity', '0');
+          aLine.setAttribute('class', 'cnxn');
+
           if(id) {
             aLine.setAttributeNS(null, 'id', id);
           }
@@ -954,7 +973,7 @@
           }
           
           _dragObj.connectorShape = aLine;
-          this.$.svg.appendChild(aLine);
+          this.$.svg.insertBefore(aLine, this.$.svg.firstChild);
 
       },
 
@@ -995,7 +1014,15 @@
 
         connectorShape.inputConnection = connector;
         connectorShape.destination = dst;
-        connectorShape.addEventListener('onclick',deleteWithClick);
+
+        // make path clickable
+        // connectorShape.setAttribute('class', 'cnxn');
+        // connectorShape.style.pointerEvents = ' visibleStroke';
+        // connectorShape.setAttribute('onclick', deleteWithClick);
+        // connectorShape.addEventListener('onclick',deleteWithClick);
+
+        // connectorShape.setAttributeNS(null, 'style','pointerEvents: visibleStro');
+
         console.log(connectorShape);
         connectorShape = null;
 
@@ -1003,7 +1030,7 @@
         if (src[srcPort] instanceof AudioNode) {
           src[srcPort].connect(dst[dstPort]);
         } else { // otherwise it is data
-          console.log('not working');
+          console.log('trying to make a data connection');
           // src.subscribers.push(dst[dstPort.label]);
           // src.
           // add an event listener
@@ -1015,6 +1042,24 @@
           console.log('delete');
           var connections = this.destination.inputConnections;
           breakSingleInputConnection( connections, connections.indexOf( this.inputConnection ) );
+        }
+      },
+
+      // mousedn helps detect if a bezier was clicked
+      mousedn: function(e) {
+        console.log(e);
+        if ( e.toElement.className.baseVal === 'cnxn' ) {
+          console.log(e.toElement.id);
+          this.bezier = this.shadowRoot.querySelector('#'+e.toElement.id);
+        } else if (e.path[0].className.indexOf('output') > -1) {
+          console.log('output');
+          // e.preventDefault();
+          // this.dragOutArrowStart(e.path[1]);
+        } else {
+          // this.bezier = null;
+          // console.log(e);
+          // this.dragOutArrowStart(e);
+          e.stopPropagation();
         }
       }
 
