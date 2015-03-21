@@ -545,8 +545,16 @@
 
         },
 
+
+        highlightBezier: function(bezier, connection) {
+          bezier.classList.add('highlighted');
+          // connection status is highlighted
+        },
+
         deleteConnection: function(e, details, selection) {
-          e.stopPropagation();
+          if (e) {
+            e.stopPropagation();
+          }
           var elementInsideId;
 
           // figure out the source
@@ -1039,6 +1047,16 @@
         // this.bezier = the most recently clicked on connection
         this.bezier = this.shadowRoot.querySelector('#'+e.toElement.id);
 
+        // if this bezier is already highlighted, delete the connection represented by this bezier
+        console.log(this.bezier.className);
+        if (String(this.bezier.classList).indexOf('highlight') > -1 ) {
+          // console.log('delete');
+          this.deleteConnection(e);
+        } else {
+          // if not highlighted, then highlight
+          this.highlightBezier(this.bezier);
+        }
+
         // var connections = this.destination.inputConnections;
         // breakSingleInputConnection( connections, connections.indexOf( this.inputConnection ) );
 
@@ -1046,17 +1064,10 @@
 
       // mousedn helps detect if a bezier was clicked
       mousedn: function(e) {
-        if ( e.toElement.className.baseVal === 'cnxn' ) {
+        var className = e.toElement.className;
+        if ( className.baseVal && className.baseVal.indexOf('cnxn') > -1 ) {
           this.clickedOnConnection(e);
-        } else if (e.path[0].className.indexOf('output') > -1) {
-        //   console.log('output');
-          // e.preventDefault();
-          // this.dragOutArrowStart(e.path[1]);
-        } else {
-          // this.bezier = null;
         }
-          // e.stopPropagation();
-
       }
 
     });
