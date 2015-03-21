@@ -433,7 +433,6 @@
         },
 
         dragOutArrow: function(e, details, selection) {
-          console.log('drag it');
           var tempPath = this.shadowRoot.querySelector('#temp_path');
 
           // the last dragMove call passes e.x=0 and e.y=0 which causes neg x,y values. this if avoids that
@@ -1016,14 +1015,8 @@
         connectorShape.destination = dst;
 
         // make path clickable
-        // connectorShape.setAttribute('class', 'cnxn');
-        // connectorShape.style.pointerEvents = ' visibleStroke';
-        // connectorShape.setAttribute('onclick', deleteWithClick);
-        // connectorShape.addEventListener('onclick',deleteWithClick);
+        // connectorShape.addEventListener('onclick',clickedOnConnection);
 
-        // connectorShape.setAttributeNS(null, 'style','pointerEvents: visibleStro');
-
-        console.log(connectorShape);
         connectorShape = null;
 
         // save connections to component source and destination
@@ -1036,31 +1029,34 @@
           // add an event listener
           // dst[dstPort.label] = src[srcPort.label];
         }
+      },
 
         // called by connectorShape object, this = the instance of that object when it deletes itself.
-        function deleteWithClick() {
-          console.log('delete');
-          var connections = this.destination.inputConnections;
-          breakSingleInputConnection( connections, connections.indexOf( this.inputConnection ) );
-        }
+      clickedOnConnection: function(e) {
+        console.log(e);
+        console.log(e.toElement.id);
+
+        // this.bezier = the most recently clicked on connection
+        this.bezier = this.shadowRoot.querySelector('#'+e.toElement.id);
+
+        // var connections = this.destination.inputConnections;
+        // breakSingleInputConnection( connections, connections.indexOf( this.inputConnection ) );
+
       },
 
       // mousedn helps detect if a bezier was clicked
       mousedn: function(e) {
-        console.log(e);
         if ( e.toElement.className.baseVal === 'cnxn' ) {
-          console.log(e.toElement.id);
-          this.bezier = this.shadowRoot.querySelector('#'+e.toElement.id);
+          this.clickedOnConnection(e);
         } else if (e.path[0].className.indexOf('output') > -1) {
-          console.log('output');
+        //   console.log('output');
           // e.preventDefault();
           // this.dragOutArrowStart(e.path[1]);
         } else {
           // this.bezier = null;
-          // console.log(e);
-          // this.dragOutArrowStart(e);
-          e.stopPropagation();
         }
+          // e.stopPropagation();
+
       }
 
     });
