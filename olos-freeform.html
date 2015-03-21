@@ -11,9 +11,9 @@
   <template>
     <link rel="stylesheet" href="olos-freeform.css">
 
-    <core-icon-button id="showDataBtn" class="active" icon="view-module" on-click="{{showDataBtn}}" alt="show component data">
+<!--     <core-icon-button id="showDataBtn" class="active" icon="view-module" on-click="{{showDataBtn}}" alt="show component data">
       <span>show component input/output</span>
-    </core-icon-button>
+    </core-icon-button> -->
 
 
     <label class="component-list-label">Drag components into canvas:</label>
@@ -39,7 +39,7 @@
           on-click="{{wrapperClicked}}" on-dragStart="{{dragStartWrapper}}" on-drag="{{dragWrapper}}" on-dragend="{{dragEndWrapper}}" draggable="true"><!-- on-drop="{{droppedOnInArrow}}" needed? -->
 
           
-            <label>{{el.name}}</label>
+            <label>{{el.name}}</label><label>{{el.id}}</label>
             <!--<core-icon-button icon="clear" class="deleteEl {{el.element.id}}" on-click="{{_deleteElement}}"></core-icon-button> -->
             <div  class="deleteEl" component_id="{{el.element.id}}" on-click="{{_deleteElement}}">X</div>
              
@@ -86,12 +86,13 @@
         <label>OUTPUT</label>
         <lens-data-table id="output_table" input="{{_selElement.output}}" class="table"  minimal="true"></lens-data-table>
       </template>
-    </div>       
+    </div>
 
-    
+
   </template>
   <script>
 
+    // GLOBAL
     var audioContext = new AudioContext();
 
     Polymer({
@@ -125,8 +126,6 @@
           newEl.style.width = '100%';
           newEl.style.height = '100%';
 
-
-
           this.appendChild(newEl);
 
           this._processNewElement(newEl, top, left);
@@ -150,9 +149,9 @@
 
         var info = this.$.component_list.getComponentInfo(newEl.tagName.toLowerCase());
 
-        if(info.resizable || info.category==='visualize') {
+        // if(info.resizable || info.category==='visualize') {
           elItem.resizable = true;
-        }
+        // }
 
         this._elements.push(elItem);
 
@@ -208,8 +207,6 @@
       },
 
       droppedInContainer: function(e, detail, selection){
-        console.log('droppedInContainer....');
-        console.log(e);
         var self = this;
 
         //dont know why this method is being called instead of resizedragend?!
@@ -270,6 +267,8 @@
           element.width = w; 
           element.height = h; 
 
+          // element.shadowRoot.container.width = w;
+          // element.shadowRoot.container.height = h;
 
           self._drawConnections();
 
@@ -595,6 +594,13 @@
        * @return {None}             
        */
       _connectAttributes: function(source, sourceField, target, targetField) {
+        console.log(source);
+        console.log(sourceField);
+        console.log(target);
+        console.log(targetField);
+
+        this.makeConnection(source.element, sourceField, target.element, targetField);
+
         var self = this;
 
         //find the index of connection which has the same target
@@ -923,9 +929,70 @@
 
           this.$.svg.appendChild(aLine);
 
+      },
+
+      //// olos environment
+
+      makeConnection: function(src, srcPort, dst, dstPort) {
+        console.log('making a connection');
+        var connectorShape = {};
+
+        // if (_dragObj && _dragObj.connectorShape) {
+        //   connectorShape = _dragObj.connectorShape;
+        // }
+
+        console.log(src[srcPort]);
+
+        // Put an entry into the source's outputs
+        if (!src.outputConnections)
+            src.outputConnections = new Array();
+        var connector = new Object();
+        connector.line = connectorShape;
+        connector.source = src;
+        connector.destination = dst;
+        connector.sourcePort = src[srcPort];
+        connector.destinationPort = dst[dstPort];
+        connector.destinationLabel = dstPort;
+        src.outputConnections.push(connector);
+
+        // Put an entry into the destinations's inputs
+        if (!dst.inputConnections)
+          dst.inputConnections = new Array();
+        connector = new Object();
+        connector.line = connectorShape;
+        connector.source = src;
+        connector.destination = dst;
+        connector.sourcePort = src[srcPort];
+        connector.destinationPort = dst[dstPort];
+        connector.destinationLabel = dstPort;
+        dst.inputConnections.push(connector);
+
+        connectorShape.inputConnection = connector;
+        connectorShape.destination = dst;
+        connectorShape.onclick = deleteConnection;
+
+        connectorShape = null;
+
+        // save connections to component source and destination
+        if (src[srcPort] instanceof AudioNode) {
+          src[srcPort].connect(dst[dstPort]);
+        } else { // otherwise it is data
+          console.log('not working');
+          // src.subscribers.push(dst[dstPort.label]);
+          // src.
+          // add an event listener
+          // dst[dstPort.label] = src[srcPort.label];
+        }
+
+      // called by connectorShape object, this = the instance of that object when it deletes itself.
+      function deleteConnection() {
+        console.log('delete');
+        // var connections = this.destination.inputConnections;
+        // breakSingleInputConnection( connections, connections.indexOf( this.inputConnection ) );
+      }
       }
 
-     
+
     });
   </script>
 </polymer-element>
