@@ -209,6 +209,17 @@
           });
           self._elements = filteredEls;
 
+          // remove custom methods associated with this element
+          var newCustomMethods = {};
+
+          for (var i in self._customMethods) {
+            if (i !== compId) {
+              newCustomMethods[i] = self._customMethods[i];
+            }
+          }
+
+          self._customMethods = newCustomMethods;
+
           // remove elements from th-connector 
           self.removeChild(ebmededEl);
         }
@@ -1239,9 +1250,6 @@
       },
 
       _saveCustomMethod: function(element, methodName, code) {
-        // TO DO: _customMethods[element] is created when element is added
-
-        // if (typeof(this._customMethods[element]) == 'undefined'
         this._customMethods[element.id][methodName] = code;
 
         // TO DO - ensure that when elements are overwritten,
