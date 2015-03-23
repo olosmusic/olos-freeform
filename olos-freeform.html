@@ -1,14 +1,18 @@
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../core-splitter/core-splitter.html">
 
-
-<!-- <link rel="import" href="../lens-data-table/lens-data-table.html"> -->
+<!-- used to show multiple methods in code-editor -->
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../paper-dropdown/paper-dropdown.html">
+<link rel="import" href="../paper-item/paper-item.html">
 
 
 <link rel="import" href="../olos-component-list/olos-component-list.html">
 
-<link rel="import" href="../olos-p5-editor/olos-p5-editor.html">
+<link rel="import" href="../olos-code-editor/olos-code-editor.html">
 
 <polymer-element name="olos-freeform" attributes="">
+
   <template>
     <link rel="stylesheet" href="olos-freeform.css">
 
@@ -16,18 +20,44 @@
       <span>show code</span>
     </core-icon-button>
 
+    <div class="toolsPlaceholder"></div>
 
-    <label class="component-list-label">Drag components into canvas:</label>
-    <olos-component-list id="component_list"></olos-component-list>
-    <olos-p5-editor id="p5"></olos-p5-editor>
+    <div id="tools">
+      <div class="splitterContainer">
 
+        <div class="inspectorControls" flex vertical layout>
 
-    <div id="input_preview" class="data-preview {{{visible: _showDataTable && _selElement.input && _selElement.input.length>0 } | tokenList }}">
+          <label class="component-list-label">Drag components into canvas:</label>
+          <!-- <div class="paletteTree"> -->
+            <olos-component-list id="component_list"></olos-component-list>
+          <!-- </div> -->
+        </div>
+
+        <!-- <core-splitter direction="down"></core-splitter> -->
+
+        <div class="sidebar" vertical layout>
+            <label>Current Method: </label>
+            <paper-dropdown-menu id="methodDropdown" label="{{_selectedMethod}}">
+              <paper-dropdown class="dropdown">
+                <core-menu selected="0" id="selector" on-core-select="{{_methodChanged}}" class="menu">
+                  <template repeat="{{meth, index in _publicMethods}}">
+                    <paper-item label="{{meth}}">{{meth}}</paper-item>
+                  </template>
+                </core-menu>
+              </paper-dropdown>
+          </paper-dropdown-menu>
+          <olos-code-editor id="codeeditor"></olos-code-editor>
+        </div>
+
+      </div>
+    </div> <!-- end tools-->
+
+<!--     <div id="input_preview" class="data-preview {{{visible: _showDataTable && _selElement.input && _selElement.input.length>0 } | tokenList }}">
       <template if="{{_showDataTable && _selElement.input && _selElement.input.length>0}}">
         <label>INPUT</label>
-        <!-- <lens-data-table id="input_table" input="{{_selElement.input}}" class="table"  minimal="true"></lens-data-table> -->
+       <lens-data-table id="input_table" input="{{_selElement.input}}" class="table"  minimal="true"></lens-data-table>
       </template>
-    </div>
+    </div> -->
 
     <div id="container" on-mousedown="{{mousedn}}" on-drop="{{droppedInContainer}}" on-dragover="{{draggedOverContainer}}">
 
@@ -85,14 +115,6 @@
 
     </div> <!-- end container-->
 
-    <div id="output_preview" class="data-preview {{{visible: _showDataTable && _selElement.output && _selElement.output.length>0 } | tokenList }}">
-      <template if="{{_showDataTable && _selElement.output && _selElement.output.length>0}}">
-        <label>OUTPUT</label>
-        <lens-data-table id="output_table" input="{{_selElement.output}}" class="table"  minimal="true"></lens-data-table>
-      </template>
-    </div>
-
-
   </template>
   <script>
 
@@ -107,10 +129,16 @@
       _connections: [],
 
       _selElement: null,
+      _selectedMethod: null,
+      _publicMethods: null,
 
       _snapX: 10,
       _snapY: 10,
-      _showDataTable: true,
+      _showDataTable: false,
+
+      // store all of the methods that have been overwritten
+      // id: methodName: code
+      _customMethods: {},
 
 
       domReady: function() {
@@ -160,7 +188,7 @@
         // }
 
         this._elements.push(elItem);
-
+        this._initCustomMethodsObj(elItem);
       },
 
       _deleteElement: function(e) {
@@ -435,8 +463,7 @@
           // if(this.$.output_table) {
           //   this.$.output_table.input = this._selElement.output;
           // }
-
-        },         
+        },
 
         dragOutArrowStart: function(e, details, selection) {
 
@@ -1094,7 +1121,161 @@
         if ( className.baseVal && className.baseVal.indexOf('cnxn') > -1 ) {
           this.clickedOnConnection(e);
         }
-      }
+      },
+
+      // list public methods in dropdown
+      _listPublicMethods: function(el) {
+        var codeEditor = this.$.codeeditor;
+
+        // find this element's public methods
+        var publicMethods = el.publicMethods;
+
+        // TO DO: showpublicmethodsinavenue
+        if (typeof(publicMethods) !== 'undefined') {
+          for (var i = 0; i < publicMethods.length; i++) {
+
+          }
+        }
+      },
+
+      // show code in the codeEditor
+      _showCode: function(el) {
+        var self = this;
+        var codeEditor = this.$.codeeditor;
+
+        // find this element's public methods
+        var publicMethods = el.publicMethods;
+
+        // this._setupMethodDropdown(publicMethods);
+
+        // for now, just show the first editable method
+        // var methodIndex = 0;
+
+        // show code TO DO: make multiple parts editable
+        // var displayCode = String(el.publicAudio);
+
+        if (typeof(publicMethods) !== 'undefined' && publicMethods.length > 0) {
+          // var methodName = publicMethods[methodIndex];
+          var methodName = this._selectedMethod;
+          var displayCode;
+
+          // if we have already set a custom value for this method, display that
+          if (typeof (this._customMethods[el.id][methodName]) !== 'undefined'){
+            displayCode = this._customMethods[el.id][methodName];
+            console.log('the code already exists! and is...' );
+            console.log(displayCode);
+          } else {
+            displayCode = String(el[methodName]);
+            // remove first and last lines of the function to only show its contents
+            displayCode = displayCode.split('\n');
+            displayCode.shift();
+            displayCode.pop();
+
+            // remove indentation so it looks nice
+            displayCode.forEach(function(row, index){
+              if (row[0] === '\t') {
+                console.log('it is a tab');
+                // remove the tab
+                row = row.substr(1);
+              } else if (row[0] === ' ' && row[1] === ' '){
+                // remove the space
+                row = row.substr(6);
+              }
+              displayCode[index] = row;
+            })
+            // console.log(displayCode.length);
+
+
+            displayCode = displayCode.join('\n');
+          }
+
+
+          codeEditor.setValue(displayCode);
+
+          // tell codeEditor to update the method when code is changed
+          codeEditor.methodName = methodName;
+          codeEditor.currentMethod = el['methodName'];
+
+          codeEditor.mirror.on('change', function(e) {
+            self.updateCode(e);
+          });
+
+          this.updateCode();
+
+        }
+        else {
+          codeEditor.setValue('//selected element has no public methods');
+          // this.$.methodDropdown.$.label.innerHTML = 'No Method Selected';
+          // console.log(this.$.methodDropdown);
+          // this.$.methodDropdown.label = 'No Method Selected';
+
+          codeEditor.mirror.on('change', function(e) {
+
+          });
+        }
+
+      },
+
+      updateCode: function(x) {
+        var codeEditor = this.$.codeeditor;
+        var methodName = this._selectedMethod;
+        var currentMethod = codeEditor.currentMethod;
+        // if there are no errors,
+
+        // set currentMethod
+        var newCode = codeEditor.getValue();
+        var elMethod = this._selElement[methodName];
+        // console.log(this);
+        this._selElement[methodName] = Function(newCode).bind(this._selElement);
+        this._selElement[methodName]();
+
+        this._saveCustomMethod(this._selElement, methodName, newCode );
+      },
+
+      // SAVE CUSTOM METHODS
+
+      _initCustomMethodsObj: function(elItem) {
+        this._customMethods[elItem.id] = {};
+      },
+
+      _saveCustomMethod: function(element, methodName, code) {
+        // TO DO: _customMethods[element] is created when element is added
+
+        // if (typeof(this._customMethods[element]) == 'undefined'
+        this._customMethods[element.id][methodName] = code;
+
+        // TO DO - ensure that when elements are overwritten,
+        // customMethods related to that element are deleted
+      },
+
+      _setupMethodDropdown: function(el) {
+        var publicMethods = el.publicMethods;
+        this._publicMethods = publicMethods;
+        if (typeof(this._publicMethods) !== 'undefined' && this._publicMethods.length > 0) {
+          this._selectedMethod = this._publicMethods[0];
+        }
+      },
+
+      // OBSERVER for selected element changed
+      _selElementChanged: function() {
+        // TO DO: figure out why this doesnt show as default
+        this._selectedMethod = 'No Method Selected';
+        this._setupMethodDropdown(this._selElement);
+        this._listPublicMethods(this._selElement);
+        this._showCode(this._selElement);
+        // this._methodChanged();
+      },
+
+      _methodChanged: function(e, detail) {
+        var self = this;
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        this._selectedMethod = detail.item.getAttribute('label');
+        console.log(this._selectedMethod);
+        this._showCode(this._selElement);
+      },
 
     });
   </script>

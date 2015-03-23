@@ -4,355 +4,404 @@
 			display: block;
 			width: 100%;
 			height: 100%;
-
 		}
-      #component_list {
-        position: absolute;
-        top: 80px;
-        right: 12px;
-        z-index: 200;
-        
-      }	
-      .component-list-label	{
-        position: absolute;
-        top: 75px;
-        right: 62px;
 
-      }
+    .sidebar {
+/*      width:400px;*/
+      height:50%;
+      right:12px;
+      bottom:5px;
+      position: absolute;
+      z-index: 150;
+    }
 
-      #component_list /deep/ core-menu {
-      	background-color: rgba(255,255,255,0.8);
-      }
+    #codeeditor {
+      /*left:0px;*/
+    }
 
-      #p5 {
-        position: absolute;
-        top: 0px;
-        left: 12px;
-        z-index: 200;
-        
-      } 
+    .toolsPlaceholder {
+      width: 350px;
+    }
 
-      #container {
-        position: relative;
-        width: 100%;
-        height: 100%;
-        background: url(grid.png) 0 0 repeat;
-        z-index: 1;
-      }
+    .splitterContainer {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+    }
+    .paletteTree {
+      background-color: white;
+      height: 50%;
+    }
 
-      svg {
-        width: 100%;
-        height: 100%;
-        position: absolute;
-        top: 0;
-        left: 0;
-        margin: 0;
-        padding: 0;
-        z-index: 0;
-        pointer-events: none;
-      }
+    #tools {
+      -webkit-transition: -webkit-transform 0.3s ease-in-out;
+      transition: transform 0.3s ease-in-out;
+      position: fixed;
+      /*overflow: hidden;*/
+      top: 0;
+      bottom: 0;
+      right: 0;
+      width: 350px;
+      border-left: 1px solid silver;
+      /*-webkit-user-select: none;*/
+      z-index: 100;
+    }
 
-      svg .highlighted {
-        stroke: #74E8CD;
-      }
+    #component_list {
+      display:block;
+      position: fixed;
+      top: 80px;
+      right: 12px;
+      z-index:200;
+    }	
+    .component-list-label	{
+      position: fixed;
+      top: 75px;
+      right: 62px;
 
-      .cnxn {
-        pointer-events: visibleStroke;
-        z-index:101;
-      }
+    }
 
-      #showDataBtn {
-        position: fixed;
-        top: 5px;
-        right: 10px;
-        z-index: 300;
-        background-color: #FFF;
-        border: 1px solid #EEE;
-      }
+    .inspectorControls {
+      height:50%;
+      z-index:0;
+      /*background:red;*/
+    }
 
-      #showDataBtn span {
-        position: absolute;
-        display: none;
-        font-size: 11px;
-        left: -24px;
-        text-align: center;
-        top: 43px;
-        width: 77px;
-        color: #888;        
-      }
+    #component_list /deep/ core-menu {
+    	background-color: rgba(255,255,255,0.8);
+    }
 
-      #showDataBtn:hover span {
-        
-        display: block;
-      }
+    #p5 {
+      position: absolute;
+      top: 0px;
+      left: 12px;
+      z-index: 200;
+      
+    } 
 
-      core-icon-button.active, #showDataBtn.active {
-        background-color: #EEE;
-        border: 1px solid #888;
+    #container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: url(grid.png) 0 0 repeat;
+      z-index: 1;
+    }
 
-      }      
+    svg {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      margin: 0;
+      padding: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    svg .highlighted {
+      stroke: #74E8CD;
+    }
+
+    .cnxn {
+      pointer-events: visibleStroke;
+      z-index:101;
+    }
+
+    #showDataBtn {
+      position: fixed;
+      top: 5px;
+      right: 10px;
+      z-index: 300;
+      background-color: #FFF;
+      border: 1px solid #EEE;
+    }
+
+    #showDataBtn span {
+      position: absolute;
+      display: none;
+      font-size: 11px;
+      left: -24px;
+      text-align: center;
+      top: 43px;
+      width: 77px;
+      color: #888;        
+    }
+
+    #showDataBtn:hover span {
+      
+      display: block;
+    }
+
+    core-icon-button.active, #showDataBtn.active {
+      background-color: #EEE;
+      border: 1px solid #888;
+
+    }      
 
 
 
-      .data-preview {
-        position: fixed;
-        /*max-height: 100px;*/
-        overflow-y: scroll;
-        overflow-x: hide;
-        z-index: 100;
-        width: 100%;
-        background-color: rgba(255,255,255,0.9);
-        border: 1px solid #AAA;
-        transition: height 0.3s;
-        height: 0;
-      }
+    .data-preview {
+      position: fixed;
+      /*max-height: 100px;*/
+      overflow-y: scroll;
+      overflow-x: hide;
+      z-index: 100;
+      width: 100%;
+      background-color: rgba(255,255,255,0.9);
+      border: 1px solid #AAA;
+      transition: height 0.3s;
+      height: 0;
+    }
 
-      .visible {
-        height: 90px;
-      }
+    .visible {
+      height: 90px;
+    }
 
-      .data-preview label {
-        color: #555;
-        font-size: 11px;
-        margin: 2px 0 0 3px;
-        display: inline-block;
-        font-weight: bold;
-      }
+    .data-preview label {
+      color: #555;
+      font-size: 11px;
+      margin: 2px 0 0 3px;
+      display: inline-block;
+      font-weight: bold;
+    }
 
-      .data-preview .table {
-        margin-top: -5px;
-        display: block;
-        width: 99.9%;
-      }
+    .data-preview .table {
+      margin-top: -5px;
+      display: block;
+      width: 99.9%;
+    }
 
-      #input_preview {
-        top: 0;
-        left: 0;
-      }
-      #output_preview {
-        bottom: 0;
-        left: 0;
-      }      
+    #input_preview {
+      top: 0;
+      left: 0;
+    }
+    #output_preview {
+      bottom: 0;
+      left: 0;
+    }      
 
-      .wrapper {
-        border: 1px solid #eee;
-        display: inline-block;
-        position: absolute;
-        /*margin: 30px 20px;
-        margin-left: 60px;*/
-        min-height: 80px;
-        background-color: white;
-        overflow: hide;
-        min-width: 100px;
-        min-height: 40px;
+    .wrapper {
+      border: 1px solid #eee;
+      display: inline-block;
+      position: absolute;
+      /*margin: 30px 20px;
+      margin-left: 60px;*/
+      min-height: 80px;
+      background-color: white;
+      overflow: hide;
+      min-width: 100px;
+      min-height: 40px;
 
-        /* This makes things *much* easier?!?! */
-        box-sizing: border-box;
-      }
+      /* This makes things *much* easier?!?! */
+      box-sizing: border-box;
+    }
 
-     .wrapper .resize {
-        position: absolute;
-        right: -5px;
-        bottom: -5px;
-        width: 5px;
-        height: 5px;
-        border-bottom: 1px  solid #aaa;
-        border-right: 1px  solid #aaa;
-        cursor: se-resize;
-       
-      }  
+   .wrapper .resize {
+      position: absolute;
+      right: -5px;
+      bottom: -5px;
+      width: 5px;
+      height: 5px;
+      border-bottom: 1px  solid #aaa;
+      border-right: 1px  solid #aaa;
+      cursor: se-resize;
+     
+    }  
 
-      .selected-element {
-        border: 1px solid #888;
-        z-index: 200;
-      }          
+    .selected-element {
+      border: 1px solid #888;
+      z-index: 200;
+    }          
 
-      .connectors-in {
-        position: absolute;
-        left: -12px;
-        top: 0px;
-      }
+    .connectors-in {
+      position: absolute;
+      left: -12px;
+      top: 0px;
+    }
 
-      .connectors-out {
-        position: absolute;
-        right: -15px;
-        top: 0px;
-      }
+    .connectors-out {
+      position: absolute;
+      right: -15px;
+      top: 0px;
+    }
 
-      .wrapper li {
-        list-style: none;
-        position: relative;
-        font-size: 9px;
-        margin: 2px auto;
-      }
+    .wrapper li {
+      list-style: none;
+      position: relative;
+      font-size: 9px;
+      margin: 2px auto;
+    }
 
-      .wrapper label{
-        position: absolute;
-        top: -15px;
-        left: -2px;
-        padding: 0;
-        font-size: 11px;
-        overflow: visible;
-        cursor: move;
-      }
+    .wrapper label{
+      position: absolute;
+      top: -15px;
+      left: -2px;
+      padding: 0;
+      font-size: 11px;
+      overflow: visible;
+      cursor: move;
+    }
 
 
 /*      .wrapper .resize {
-        position: absolute;
-        right: -5px;
-        bottom: -5px;
-        width: 5px;
-        height: 5px;
-        border-bottom: 1px  solid #aaa;
-        border-right: 1px  solid #aaa;
-        cursor: se-resize;
-       
-      }*/
+      position: absolute;
+      right: -5px;
+      bottom: -5px;
+      width: 5px;
+      height: 5px;
+      border-bottom: 1px  solid #aaa;
+      border-right: 1px  solid #aaa;
+      cursor: se-resize;
+     
+    }*/
 
-      .arrow {
-        width: 12px;
-        height: 12px;
-        cursor: pointer;
-      }
+    .arrow {
+      width: 12px;
+      height: 12px;
+      cursor: pointer;
+    }
 
-      .out-arrow {
-        cursor: move;
-      }
+    .out-arrow {
+      cursor: move;
+    }
 
-      ul, li {
-        list-style: none;
-        margin: 0;
-        padding: 0;
-      }
-
-
-      .inputMarker {
-          width: 0px; 
-          height: 0px; 
-          border-top: 5px solid transparent;
-          border-bottom: 5px solid transparent;
-  
-          border-left: 7px solid #555;
-          box-sizing: border-box;
-          
-      }
-
-      .in-arrow .highlighted {
-        border-left: 7px solid #74E8CD;
-      }
-
-      .in-arrow .delete  {
-        position: absolute;
-        top: -1px;
-        left: -10px;
-        content: 'x';
-        font-size: 14px;
-        font-weight: 100;
-        z-index: 100;
-        color: #555;
-        display: none;
-      }
-
-      .in-arrow .highlighted .delete  {
-          display: block;
-      }
-
-      .connectors-in .drop-zone {
-        width: 20px;
-        height: 20px;
-        border: 1px solid #74E8CD;
-        display: none;
-        border-radius: 50%;
-        top: -5px;
-        position: absolute;
-        left: -7px;
-        pointer-events: none;
-        vertical-align: middle;
-        color: #555;
-
-      }
-
-      .drag-over .drop-zone  {
-        display: inline-block !important;
-          
-      }
+    ul, li {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
 
 
-      .outputMarker {
-          width: 0px; 
-          height: 0px; 
-          border-top: 5px solid transparent;
-          border-bottom: 5px solid transparent;
-          border-left: 7px solid #555;
+    .inputMarker {
+        width: 0px; 
+        height: 0px; 
+        border-top: 5px solid transparent;
+        border-bottom: 5px solid transparent;
 
-      }   
+        border-left: 7px solid #555;
+        box-sizing: border-box;
+        
+    }
 
-      .deleteEl {
+    .in-arrow .highlighted {
+      border-left: 7px solid #74E8CD;
+    }
 
-        width: 12px;
-        height: 12px;
-        float: right;
-        display: inline-block;
-        position: absolute;
-        top: -15px;
-        right: -14px;
-        cursor: pointer;
-        vertical-align: middle;
-        padding: 1px;
-        text-align: center;
-        font-size: 9px;
+    .in-arrow .delete  {
+      position: absolute;
+      top: -1px;
+      left: -10px;
+      content: 'x';
+      font-size: 14px;
+      font-weight: 100;
+      z-index: 100;
+      color: #555;
+      display: none;
+    }
 
-
-      }  
-
-      /*
-      
-        Styles for inside of the components.
-
-       */
-
-      *::shadow .th-container  {
-        font-size: 12px;
-        font-family: arial;
-      }
-      *::shadow .th-container p.info {
-        width: 170px;
-      }
-
-      *::shadow .th-container p.info:hover {
+    .in-arrow .highlighted .delete  {
         display: block;
-      }
+    }
+
+    .connectors-in .drop-zone {
+      width: 20px;
+      height: 20px;
+      border: 1px solid #74E8CD;
+      display: none;
+      border-radius: 50%;
+      top: -5px;
+      position: absolute;
+      left: -7px;
+      pointer-events: none;
+      vertical-align: middle;
+      color: #555;
+
+    }
+
+    .drag-over .drop-zone  {
+      display: inline-block !important;
+        
+    }
 
 
-      *::shadow .th-container .selector {
-        min-height: 10px;
-        display: inline-block;
-        max-height: 123px;
-        overflow-y: scroll; 
-      }
+    .outputMarker {
+        width: 0px; 
+        height: 0px; 
+        border-top: 5px solid transparent;
+        border-bottom: 5px solid transparent;
+        border-left: 7px solid #555;
 
-      *::shadow .th-container .selector .col {
-        padding: 1px;
-        border: 1px solid #EEE;
-      }
-      *::shadow .th-container .selector .core-selected {
-        background-color: #ccc;
+    }   
 
-      }
-      *::shadow .th-container .label {
-        display: block;
-        color: #2fa3af;
-      }
+    .deleteEl {
 
-      *::shadow .th-container input.short-input {
-        border: 1px solid #eee;
-        padding: 3px;
-        width: 5em; 
-      }
-      *::shadow .th-container core-icon-button {
-        margin: 0;
+      width: 12px;
+      height: 12px;
+      float: right;
+      display: inline-block;
+      position: absolute;
+      top: -15px;
+      right: -14px;
+      cursor: pointer;
+      vertical-align: middle;
+      padding: 1px;
+      text-align: center;
+      font-size: 9px;
 
-      }
-      *::shadow .th-container .columnName {
-        border-radius: 0;
-      }               
+
+    }  
+
+    /*
+    
+      Styles for inside of the components.
+
+     */
+
+    *::shadow .th-container  {
+      font-size: 12px;
+      font-family: arial;
+    }
+    *::shadow .th-container p.info {
+      width: 170px;
+    }
+
+    *::shadow .th-container p.info:hover {
+      display: block;
+    }
+
+
+    *::shadow .th-container .selector {
+      min-height: 10px;
+      display: inline-block;
+      max-height: 123px;
+      overflow-y: scroll; 
+    }
+
+    *::shadow .th-container .selector .col {
+      padding: 1px;
+      border: 1px solid #EEE;
+    }
+    *::shadow .th-container .selector .core-selected {
+      background-color: #ccc;
+
+    }
+    *::shadow .th-container .label {
+      display: block;
+      color: #2fa3af;
+    }
+
+    *::shadow .th-container input.short-input {
+      border: 1px solid #eee;
+      padding: 3px;
+      width: 5em; 
+    }
+    *::shadow .th-container core-icon-button {
+      margin: 0;
+
+    }
+    *::shadow .th-container .columnName {
+      border-radius: 0;
+    }               

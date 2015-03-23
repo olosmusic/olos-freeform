@@ -1,15 +1,11 @@
 {
-  "name": "lenses-freeform",
+  "name": "olos-freeform",
   "version": "0.0.0",
-  "keywords": [
-    "seed",
-    "polymer",
-    "web-components"
-  ],
-  "main": "lenses-freeform.html",
+  "license": "MIT",
+  "main": "olos-freeform.html",
   "dependencies": {
-    "polymer": "Polymer/polymer#~0.5.5",
-    "lenses-component-list": "lenses/lenses-component-list"
+    "polymer": "polymer/polymer#~0.5.5",
+    "core-splitter": "polymer/core-splitter#~0.5.5"
   },
   "devDependencies": {
     "web-component-tester": "Polymer/web-component-tester#^2.0.0"
