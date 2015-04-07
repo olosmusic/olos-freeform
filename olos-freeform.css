@@ -101,9 +101,15 @@
       pointer-events: none;
     }
 
+    svg .param {
+      stroke: #ffff00;
+    }
+
     svg .highlighted {
       stroke: #74E8CD;
     }
+
+
 
     .cnxn {
       pointer-events: visibleStroke;
@@ -214,7 +220,7 @@
     .selected-element {
       border: 1px solid #888;
       z-index: 200;
-    }          
+    }
 
     .connectors-in {
       position: absolute;
@@ -228,6 +234,12 @@
       top: 0px;
     }
 
+   .connectors-params {
+      position: absolute;
+      right: 50%;
+      top: -5px;
+    }
+
     .wrapper li {
       list-style: none;
       position: relative;
@@ -237,10 +249,10 @@
 
     .wrapper label{
       position: absolute;
-      top: -15px;
+      top: -25px;
       left: -2px;
-      padding: 0;
-      font-size: 11px;
+      padding: 5px;
+      font-size: 14px;
       overflow: visible;
       cursor: move;
     }
@@ -278,12 +290,11 @@
     .inputMarker {
         width: 0px; 
         height: 0px; 
-        border-top: 5px solid transparent;
-        border-bottom: 5px solid transparent;
-
-        border-left: 7px solid #555;
+        border-top: 10px solid;
+        /*border-bottom: 15px solid transparent;*/
+        border-left: 8px solid #34332F;
+        border-radius: 5px;
         box-sizing: border-box;
-        
     }
 
     .in-arrow .highlighted {
@@ -326,33 +337,96 @@
         
     }
 
+    .connectors-params .drop-zone {
+      width: 20px;
+      height: 20px;
+      border: 1px solid #74E8CD;
+      display: none;
+      border-radius: 50%;
+      top: -5px;
+      position: absolute;
+      left: -7px;
+      pointer-events: none;
+      vertical-align: middle;
+      color: #555;
+    }
+
+
+    .paramMarker {
+      width: 0px;
+      height: 0px;
+      left: 11px;
+      border-top: 7px solid transparent;
+      border-bottom: 8px solid transparent;
+      border-left: 10px solid #6E6E6E;
+      box-sizing: border-box;
+      border-radius: 50px;
+      -moz-transform:rotate(90deg);
+      -webkit-transform:rotate(90deg);
+      -o-transform:rotate(90deg);
+      -ms-transform:rotate(90deg);
+    }
+
+    .param-arrow {
+      padding:auto;
+      bottom:-10px;
+
+    }
+    .param-arrow .highlighted {
+      border-left: 7px solid #74E8CD;
+    }
+
+    .param-arrow .delete  {
+      position: absolute;
+      top: -1px;
+      left: -10px;
+      content: 'x';
+      font-size: 14px;
+      font-weight: 100;
+      z-index: 100;
+      color: #555;
+      display: none;
+    }
+
+    .param-arrow .highlighted .delete  {
+        display: block;
+    }
 
     .outputMarker {
-        width: 0px; 
-        height: 0px; 
-        border-top: 5px solid transparent;
-        border-bottom: 5px solid transparent;
-        border-left: 7px solid #555;
-
+      width: 0px; 
+      height: 0px; 
+/*        border-top: 15px solid transparent;
+      border-bottom: 15px solid transparent;
+      border-left: 10px solid #34332F;*/
+      border-top: 7px solid transparent;
+      border-bottom: 8px solid transparent;
+      border-left: 20px solid #34332F;
+      border-radius: 500px;
     }   
 
     .deleteEl {
 
-      width: 12px;
-      height: 12px;
+      width: 20px;
+      height: 14px;
+      top: -25px;
       float: right;
       display: inline-block;
       position: absolute;
-      top: -15px;
-      right: -14px;
+      right: -3px;
       cursor: pointer;
       vertical-align: middle;
-      padding: 1px;
+      padding: 5px;
       text-align: center;
       font-size: 9px;
 
 
     }  
+
+    #destino {
+      display: inline;
+      width: 20px;
+      padding-top: 300px;
+    }
 
     /*
     

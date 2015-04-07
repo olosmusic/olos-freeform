@@ -6,15 +6,13 @@
 <link rel="import" href="../paper-dropdown/paper-dropdown.html">
 <link rel="import" href="../paper-item/paper-item.html">
 
-
 <link rel="import" href="../olos-component-list/olos-component-list.html">
-
 <link rel="import" href="../olos-code-editor/olos-code-editor.html">
 
 <polymer-element name="olos-freeform" attributes="">
-
   <template>
     <link rel="stylesheet" href="olos-freeform.css">
+    <link rel="stylesheet" href="colors.css">
 
     <core-icon-button id="showDataBtn" class="active" icon="view-module" on-click="{{showDataBtn}}" alt="show component data">
       <span>show code</span>
@@ -30,9 +28,39 @@
           <label class="component-list-label">Drag components into canvas:</label>
           <!-- <div class="paletteTree"> -->
             <olos-component-list id="component_list"></olos-component-list>
+
           <!-- </div> -->
+
+        <div id="destino" width="30" height="30">
+          <!-- destination -->
+          <template repeat="{{destination in destinations}}">
+
+            <div class="wrapper" id="wrapper" on-click="{{wrapperClicked}}" draggable="false">
+          <div class="wrapper {{destination.name}} {{destination.colorClass + '2'}}" id="wrapper-{{destination.element.id}}" component-id="{{destination.element.id}}" on-click="{{wrapperClicked}}" 
+          style="top: {{destination.top}}px; left: {{destination.left}}px; transform: {{destination.transform}}; width: {{destination.width}}px; height: {{destination.height}}px" 
+          on-click="{{wrapperClicked}}" on-dragStart="{{dragStartWrapper}}" on-drag="{{dragWrapper}}" on-dragend="{{dragEndWrapper}}" draggable="true"><!-- on-drop="{{droppedOnInArrow}}" needed? -->
+
+              <!-- Input -->
+              <div class="connectors-in" >
+                <ul>
+                  <template repeat="{{ins in destination.element.publish | _checkForInputAttr}}">
+                      <li class="{{destination.element.id}}-{{ins}} arrow in-arrow" on-dragover="{{dragOverInArrow}}" 
+                      on-drop="{{droppedOnInArrow}}" on-dragenter="{{dragEnterInArrow}}" on-dragleave="{{dragLeaveInArrow}}" on-click="{{arrowClicked}}">
+                        <div class="inputMarker">
+                          <div class="delete" on-click="{{deleteConnection}}">x</div>
+                          <span class="drop-zone">{{ins}}</span>
+                        </div>
+                      </li>
+                  </template>
+                </ul>
+              </div>
+            </div>
+          </template>
+          <!-- / destination-->
+
         </div>
 
+        </div>
         <!-- <core-splitter direction="down"></core-splitter> -->
 
         <div class="sidebar" vertical layout>
@@ -66,16 +94,16 @@
       <!-- Components and connector dots --> 
       <!--<template if="{{_positioned}}">-->
 
-        <template repeat="{{el, index in _elements}}">
-          <div class="wrapper {{el.name}}" id="wrapper-{{el.element.id}}" component-id="{{el.element.id}}" on-click="{{wrapperClicked}}" 
-          style="top: {{el.top}}px; left: {{el.left}}px; transform: {{el.transform}}; width: {{el.width}}px; height: {{el.height}}px" 
-          on-click="{{wrapperClicked}}" on-dragStart="{{dragStartWrapper}}" on-drag="{{dragWrapper}}" on-dragend="{{dragEndWrapper}}" draggable="true"><!-- on-drop="{{droppedOnInArrow}}" needed? -->
+        <template repeat="{{el, index in _elements }}">
+          <template if="{{el.id | noDest}}">
+            <div class="wrapper {{el.name}} {{el.colorClass + '2'}}" id="wrapper-{{el.element.id}}" component-id="{{el.element.id}}" on-click="{{wrapperClicked}}" 
+            style="top: {{el.top}}px; left: {{el.left}}px; transform: {{el.transform}}; width: {{el.width}}px; height: {{el.height}}px" 
+            on-click="{{wrapperClicked}}" on-dragStart="{{dragStartWrapper}}" on-drag="{{dragWrapper}}" on-dragend="{{dragEndWrapper}}" draggable="true"><!-- on-drop="{{droppedOnInArrow}}" needed? -->
 
-          
-            <label>{{el.id}}</label>
-            <!--<core-icon-button icon="clear" class="deleteEl {{el.element.id}}" on-click="{{_deleteElement}}"></core-icon-button> -->
-            <div  class="deleteEl" component_id="{{el.element.id}}" on-click="{{_deleteElement}}">X</div>
-             
+            <label class="{{el.colorClass + '3'}}" width="100%">{{el.id}}</label>
+              <!--<core-icon-button icon="clear" class="deleteEl {{el.element.id}}" on-click="{{_deleteElement}}"></core-icon-button> -->
+            <div  class="deleteEl {{el.colorClass + '4'}}" component_id="{{el.element.id}}" on-click="{{_deleteElement}}">X</div>
+
             <div class="connectors-in" >
               <!-- Input -->
               
@@ -91,11 +119,13 @@
                       <!--{{ins}}-->
                     </li>
                 </template>
+
               </ul>
 
               <!-- Output -->
             </div>
             <content select="#{{el.id}}"></content>
+
             <div class="connectors-out" >
               <template if="{{el.element.publish | _checkForOutputAttr}}">
                 <div id="{{index}}"  class="{{el.element.id}} arrow out-arrow" 
@@ -104,26 +134,64 @@
                   <div class="outputMarker" style="z-index:101"></div>
                 </div>
               </template>
-              
             </div>
+
+            <!-- audioParams -->
+            <div class="connectors-params">
+              <template repeat="{{params in el.element.publish | _checkForAudioParams}}">
+                   
+                  <li class="{{el.element.id}}-{{params}} arrow param-arrow" on-dragover="{{dragOverParamArrow}}" 
+                  on-drop="{{droppedOnParamArrow}}" on-dragenter="{{dragEnterParamArrow}}" on-dragleave="{{dragLeaveParamArrow}}" on-click="{{arrowClicked}}">
+                    <div class="paramMarker">
+                      <div class="delete" on-click="{{deleteConnection}}">x</div>
+                      <span class="drop-zone">{{params}}</span>
+                    </div>
+                  </li>
+              </template>
+            </div>
+
             <template if="{{el.resizable}}">
               <div class="resize" draggable="true" on-dragStart="{{dragStartResize}}" on-drag="{{dragResize}}" on-dragend="{{dragEndResize}}"></div>
             </template>
           
           </div>
+          </template>
+
         </template>
 
     </div> <!-- end container-->
 
   </template>
+
+  <script type="text/javascript" src="../p5js/lib/p5.js"></script>
+  <script type="text/javascript" src="../p5js/lib/addons/p5.sound.js"></script>
+
   <script>
 
+    PolymerExpressions.prototype.noDest = function(str) {
+      var i = str.indexOf('destination') > -1 ? true : false;
+      if (!i){
+        return str;
+      }
+    };
+
+
+    // set up global p5
+    function setup() {
+      noLoop();
+      noCanvas();
+    }
+
     // GLOBAL
-    var audioContext = new AudioContext();
+    if (window.p5) {
+      var audioContext = p5.prototype.getAudioContext();
+    }
 
     var _dragObj = {};
 
     Polymer({
+
+      destinations: [],
 
       _elements: [],
       _connections: [],
@@ -140,18 +208,24 @@
       // id: methodName: code
       _customMethods: {},
 
+      // color scheme
+      _colors: ['a', 'b', 'c', 'd'],
 
       domReady: function() {
-
 
           this.addEventListener('core-resize', function() {
             this._drawConnections();
           });
+
+          var obj = ['olos-destination', '-1'];
+          this.addNewElToConnector(obj, 0, 0);
       },
 
 
-      addNewElToConnector: function(newElName, left, top){
+      addNewElToConnector: function(newEl, left, top){
 
+        var newElName = newEl[0];
+        var newElCategoryIndex = newEl[1];
 
         var newEl = document.createElement(newElName);
 
@@ -160,34 +234,61 @@
           newEl.style.width = '100%';
           newEl.style.height = '100%';
 
-          this.appendChild(newEl);
+          if (newElName.indexOf('destination') > -1){
+            console.log('destino!');
+            this.$.destino.appendChild(newEl);
+          } else {
+            this.appendChild(newEl);
+          }
 
-          this._processNewElement(newEl, top, left);
+          this._processNewElement(newEl, top, left, newElCategoryIndex);
 
         }.bind(this));
 
 
       }, 
 
-      _processNewElement: function(newEl, top, left) {
+      _processNewElement: function(newEl, top, left, newElCategoryIndex) {
+        var self = this;
 
         newEl.id = this._generateUniqueId(newEl.tagName.toLowerCase());
+
+        var cat = this.$.component_list.mainCategories[newElCategoryIndex];
+        var colorClass = this._colors[newElCategoryIndex];
 
         var elItem = {  element: newEl, 
                                       id: newEl.id,
                                       name: newEl.tagName.toLowerCase(), 
                                       top: top,
-                                      left: left
+                                      left: left,
+                                      category: cat,
+                                      colorClass: colorClass
                                   };
 
 
         var info = this.$.component_list.getComponentInfo(newEl.tagName.toLowerCase());
 
         // if(info.resizable || info.category==='visualize') {
+        if (elItem.name.indexOf('destination') > -1) {
+          console.log(elItem.name);
+          elItem.resizable = false;
+          setTimeout(function() {
+            self.destinations.push(elItem);
+          }, 200);
+        } else {
           elItem.resizable = true;
+        }
+        this._elements.push(elItem);
+        
         // }
 
-        this._elements.push(elItem);
+
+        // also make it global
+        window._elements = this._elements;
+        window.olos = this;
+
+        // TO DO: make objects public
+
         this._initCustomMethodsObj(elItem);
       },
 
@@ -197,7 +298,7 @@
 
           var self = this;
           var compId = e.target.getAttribute('component_id');
-          var ebmededEl = self.querySelector('#'+compId);
+          var embeddedEl = self.querySelector('#'+compId);
           var elInArray = self.findElById(compId);
 
           //remove all connections
@@ -220,8 +321,11 @@
 
           self._customMethods = newCustomMethods;
 
-          // remove elements from th-connector 
-          self.removeChild(ebmededEl);
+          // remove elements
+          self.removeChild(embeddedEl);
+
+          // dispose will remove this element's audio nodes and animation loops / p5 sketches / nexusUI
+          embeddedEl.dispose();
         }
       },
 
@@ -245,7 +349,14 @@
 
         // disconnect the badConnections
         for (var i = 0 ; i < badConnections.length; i++) {
-          this._deleteAudioConnection(badConnections[i]);
+          var src = badConnections[i].source.element[badConnections[i].source.field];
+          if (src instanceof AudioNode) {
+            this._deleteAudioConnection(badConnections[i]);
+            console.log(src);
+            console.log('..is audio node');
+          } else {
+            console.log('removed connection ' + src + ' is not audio!!');
+          }
         }
 
         this._drawConnections();
@@ -253,10 +364,15 @@
       },
 
       _deleteAudioConnection: function(connection) {
+        var self = this;
         var srcElem = connection.source.element;
         var srcField = connection.source.field;
         var srcNode = srcElem[srcField];
-        srcNode.disconnect();
+        try{
+          srcNode.disconnect();
+        } catch(e) {
+          self.deleteConnection(connection);
+        }
 
         // reconnect any connections that have srcNode as the source
         for (var i = 0; i < this._connections.length; i++) {
@@ -290,14 +406,14 @@
         }
 
         var dataTransfer = e.dataTransfer.getData('text/plain');
-
+        // console.log(dataTransfer);
         //data added by olos-component-list //TODO make better
         if(dataTransfer && dataTransfer.length>0) {
           var dataSeg = dataTransfer.split(',');
 
-
-          if(dataSeg.length==1) {
-            self.addNewElToConnector(dataSeg[0], Math.round(e.offsetX/10)*10, Math.round(e.offsetY/10)*10);
+          // dataSeg[0] is component name, dataSeg[1] is categoryIndex
+          if(dataSeg.length==2) {
+            self.addNewElToConnector(dataSeg, Math.round(e.offsetX/10)*10, Math.round(e.offsetY/10)*10);
 
             return;
           } 
@@ -476,6 +592,7 @@
           // }
         },
 
+        // OUT ARROWS
         dragOutArrowStart: function(e, details, selection) {
 
           this.draggedEl = selection;
@@ -518,10 +635,11 @@
           if(tempPath) {
             tempPath.parentNode.removeChild(tempPath);
           }
-               
 
         },
 
+
+        // IN ARROWS
         dragOverInArrow: function(e, details, selection) {
 
           //important! needed to allow drop
@@ -558,20 +676,57 @@
 
         }, 
 
+        // PARAMS
+        dragOverParamArrow: function(e, details, selection) {
+          //important! needed to allow drop
+          e.preventDefault();
+        },
+
+        dragEnterParamArrow: function(e, details, selection) {
+          e.target.classList.add('drag-over');
+        },
+
+        dragLeaveParamArrow: function(e, details, selection) {
+          e.target.classList.remove('drag-over');
+        },
+
+        droppedOnParamArrow: function(e, details, selection) {
+          var self = this;
+          e.target.classList.remove('drag-over');
+
+          var className = selection.classList[0],
+              targetElementId = className.substring(0, className.lastIndexOf('-') ),   
+              targetField = className.substring(className.lastIndexOf('-') + 1, className.length ),      
+              source = self.findElById(self.draggedEl.classList[0]),
+              target = self.findElById(targetElementId);
+
+          // connect source to audioParam
+          this._connectAttributes(source, 'output', target, targetField);
+          // self._drawConnections();
+          e.stopPropagation();
+        }, 
+
         arrowClicked: function(e, details, selection) {
           //e.stopPropagation();
 
           var wrapper = null;
+          var isAudioParam = false;
+
           for(var i = 0; i< e.path.length && !wrapper; i++) {
             if(e.path[i].classList.contains('wrapper')) {
               wrapper = e.path[i];
             }
-          } 
-          var sourceTarget = e.path[0].classList.contains('inputMarker') ? 'target' : 'source';
+          }
+
+          // paramMarker is also a target
+          var sourceTarget = e.path[0].classList.contains('outputMarker') ? 'source' : 'target';
+
+          // TO DO: use this.
+          if (e.path[0].classList.contains('paramMarker')) {
+            isAudioParam = true;
+          }
+
           var elementInsideId = wrapper.getAttribute('component-id');
-
-          //var elementInside = this.findElById(elementInsideId);
-
 
           var connection = this._connections.filter(function(conn) {
             if(conn[sourceTarget].id===elementInsideId) {
@@ -786,10 +941,11 @@
           var srcEl = conn.source.element || self.querySelector('#'+conn.source.id); //TODO do this in initialization method
           var targetEl = conn.target.element || self.querySelector('#'+conn.target.id);
 
+          // isAudioParam determines offset of the connection target
+          var isAudioParam = conn.target.field.indexOf('Param') > -1 ? true : false;
 
           var srcWrapper = self.shadowRoot.querySelector('#wrapper-'+srcEl.id);
           var targetWrapper = self.shadowRoot.querySelector('#wrapper-'+targetEl.id);
-
 
           // var srcRect = srcEl.getBoundingClientRect();
           // var targetRect = targetEl.getBoundingClientRect();
@@ -797,20 +953,21 @@
           var srcRect = srcWrapper.getBoundingClientRect();
           var targetRect = targetWrapper.getBoundingClientRect();
 
-
           var svgRect = self.$.svg.getBoundingClientRect();
 
-          var otherInputOffset = (conn.target.field==='input') ? 0 : 16;
+          var paramOffset = (conn.target.field.indexOf('Param') > -1) ? [targetRect.width/2, -8] : [0,0];
+
+          console.log('offset: ' + paramOffset);
 
           var startX = srcRect.right - svgRect.left + arrowOffsetX; //srcRect.left + srcRect.width + 30 - containerOffsetX;
           var startY = srcRect.top - svgRect.top + arrowOffsetY;
-          var endX = targetRect.left  - svgRect.left - arrowOffsetX;
-          var endY = targetRect.top  - svgRect.top + arrowOffsetY + otherInputOffset;
+          var endX = targetRect.left  - svgRect.left - arrowOffsetX + paramOffset[0];
+          var endY = targetRect.top  - svgRect.top + arrowOffsetY + paramOffset[1];
 
 
-          self._addBezierPath(startX, startY, endX, endY , bezierCurveX, srcEl.id + '-' + targetEl.id, conn.highlighted);
+          self._addBezierPath(startX, startY, endX, endY , bezierCurveX, srcEl.id + '-' + targetEl.id, conn.highlighted, isAudioParam);
           
-        }        
+        }
 
       },
 
@@ -958,18 +1115,20 @@
        * @return {Object}           list of attributes that are input.
        */
       _checkForInputAttr: function(published){
+        console.log(published);
         if(!published) {
           return false;
         }
         var attrs = Object.keys(published).filter(function(item) {
           return item.indexOf("input") > -1;
 
-        })
+        });
+        console.log(attrs);
         return attrs;
       },
      
       /**
-       * Checks if a componenet has output attributes.
+       * Checks if a component has output attributes.
        * @param  {Object} published Object containing all published attributes
        * @return {boolean}       True if component has output attribute (only one)
        */
@@ -979,6 +1138,40 @@
         }
 
         return Object.keys(published).indexOf("output") > -1 ? true : false;
+      },
+
+      /**
+       *  Checks if a component has audioParams. AudioParams must have 'param'
+       *  in the name and be published attributes.
+       *  
+       *  @param  {Object} published Object containing all published attributes
+       *  @return  {Oobject} list of attributes that are audioParams.
+       */
+      _checkForAudioParams: function(published) {
+        if(!published) {
+          return false;
+        }
+        var attrs = Object.keys(published).filter(function(item) {
+          return item.toLowerCase().indexOf("param") > -1;
+        });
+        console.log(attrs);
+        return attrs;
+        // console.log(published.audioParams);
+        // return published.audioParams;
+
+        // var audioParams = [];
+        // var audioParamKeys = keys.filter(function(key){return newEl.audioParams; });
+        // console.log('hi');
+        // for (var j in audioParamKeys) {
+        //   var audioNode = newEl[audioParamKeys[j]];
+        //   for (var i in audioNode) {
+        //     if (audioNode[i] instanceof AudioParam) {
+        //       audioParams.push(audioNode[i]);
+        //     }
+        //   }
+        // }
+        // console.log(audioParams);
+        // return audioParams;
       },
 
       /**
@@ -999,9 +1192,6 @@
           
           return uniqueId;
       }, 
-
-
-
 
 
       _createBezierPath: function(startX, startY, endX, endY, handleOffsetX) {
@@ -1025,7 +1215,7 @@
           return path;
       },
 
-      _addBezierPath: function(startX, startY, endX, endY, handleOffsetX, id, highlighted) {
+      _addBezierPath: function(startX, startY, endX, endY, handleOffsetX, id, highlighted, isParam) {
 
           var aLine = document.createElementNS('http://www.w3.org/2000/svg', 'path'); 
           var path = this._createBezierPath(startX, startY, endX, endY, handleOffsetX);
@@ -1044,6 +1234,10 @@
             aLine.classList.add('highlighted');
           }
           
+          if(isParam) {
+            aLine.classList.add('param');
+          }
+
           _dragObj.connectorShape = aLine;
           this.$.svg.insertBefore(aLine, this.$.svg.firstChild);
 
@@ -1053,6 +1247,7 @@
 
       makeConnection: function(src, srcPort, dst, dstPort, svgPath) {
 
+        var isAudioParam = dstPort.indexOf('Param') > -1 ? true : false;
         var connectorShape = {};
 
         if (_dragObj && _dragObj.connectorShape) {
@@ -1091,17 +1286,21 @@
         // connectorShape.addEventListener('onclick',clickedOnConnection);
 
         connectorShape = null;
-        console.log(src, srcPort, dst, dstPort);
         // save connections to component source and destination
-        if (src[srcPort] instanceof AudioNode) {
+        if (src[srcPort] instanceof AudioNode && dst[dstPort] instanceof AudioNode) {
           src[srcPort].connect(dst[dstPort]);
-        } else { // otherwise it is data
+        } else if (dst[dstPort] instanceof AudioParam) {
+          console.log('audio param connection!');
+          src[srcPort].connect(dst[dstPort]);
+        } else if (dst[dstPort] instanceof Array) { // otherwise it is data
+          console.log('add to destination array');
+          // add to input array
+          dst[dstPort].push(src[srcPort]);
+        } else {
           console.log('trying to make a data connection');
-          // src.subscribers.push(dst[dstPort.label]);
-          // src.
-          // add an event listener
-          // dst[dstPort.label] = src[srcPort.label];
         }
+
+        this._drawConnections();
       },
 
         // called by connectorShape object, this = the instance of that object when it deletes itself.
@@ -1174,7 +1373,6 @@
           if (typeof (this._customMethods[el.id][methodName]) !== 'undefined'){
             displayCode = this._customMethods[el.id][methodName];
             console.log('the code already exists! and is...' );
-            console.log(displayCode);
           } else {
             displayCode = String(el[methodName]);
             // remove first and last lines of the function to only show its contents
@@ -1283,7 +1481,8 @@
         this._selectedMethod = detail.item.getAttribute('label');
         console.log(this._selectedMethod);
         this._showCode(this._selElement);
-      },
+      }
+
 
     });
   </script>
