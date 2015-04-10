@@ -217,11 +217,6 @@
      
     }  
 
-    .selected-element {
-      border: 1px solid #888;
-      z-index: 200;
-    }
-
     .connectors-in {
       position: absolute;
       left: -12px;
@@ -419,6 +414,23 @@
       text-align: center;
       font-size: 9px;
 
+
+    }
+
+    .codeTab {
+      width: 20%;
+      height: 20px;
+      top: -14px;
+      float: right;
+      display: inline-block;
+      position: absolute;
+      right: 20%;
+      cursor: pointer;
+      vertical-align: middle;
+      padding: 5px;
+      text-align: center;
+      font-size: 9px;
+      overflow:hidden;
 
     }  
 

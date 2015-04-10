@@ -9,7 +9,9 @@
 <link rel="import" href="../olos-component-list/olos-component-list.html">
 <link rel="import" href="../olos-code-editor/olos-code-editor.html">
 
-<polymer-element name="olos-freeform" attributes="">
+<link rel="stylesheet" href="colors.css">
+
+<polymer-element name="olos-freeform" attributes="" on-keydown="{{keydownHandler}}" on-keypress="{{keypressHandler}}">
   <template>
     <link rel="stylesheet" href="olos-freeform.css">
     <link rel="stylesheet" href="colors.css">
@@ -74,20 +76,17 @@
                 </core-menu>
               </paper-dropdown>
           </paper-dropdown-menu>
+
+
           <olos-code-editor id="codeeditor"></olos-code-editor>
+
         </div>
 
       </div>
     </div> <!-- end tools-->
 
-<!--     <div id="input_preview" class="data-preview {{{visible: _showDataTable && _selElement.input && _selElement.input.length>0 } | tokenList }}">
-      <template if="{{_showDataTable && _selElement.input && _selElement.input.length>0}}">
-        <label>INPUT</label>
-       <lens-data-table id="input_table" input="{{_selElement.input}}" class="table"  minimal="true"></lens-data-table>
-      </template>
-    </div> -->
 
-    <div id="container" on-mousedown="{{mousedn}}" on-drop="{{droppedInContainer}}" on-dragover="{{draggedOverContainer}}">
+    <div id="container" on-mousedown="{{clickInContainer}}" on-drop="{{droppedInContainer}}" on-dragover="{{draggedOverContainer}}">
 
       <svg id="svg"></svg>
 
@@ -96,13 +95,20 @@
 
         <template repeat="{{el, index in _elements }}">
           <template if="{{el.id | noDest}}">
+
             <div class="wrapper {{el.name}} {{el.colorClass + '2'}}" id="wrapper-{{el.element.id}}" component-id="{{el.element.id}}" on-click="{{wrapperClicked}}" 
             style="top: {{el.top}}px; left: {{el.left}}px; transform: {{el.transform}}; width: {{el.width}}px; height: {{el.height}}px" 
             on-click="{{wrapperClicked}}" on-dragStart="{{dragStartWrapper}}" on-drag="{{dragWrapper}}" on-dragend="{{dragEndWrapper}}" draggable="true"><!-- on-drop="{{droppedOnInArrow}}" needed? -->
 
-            <label class="{{el.colorClass + '3'}}" width="100%">{{el.id}}</label>
-              <!--<core-icon-button icon="clear" class="deleteEl {{el.element.id}}" on-click="{{_deleteElement}}"></core-icon-button> -->
-            <div  class="deleteEl {{el.colorClass + '4'}}" component_id="{{el.element.id}}" on-click="{{_deleteElement}}">X</div>
+            <div>
+              <label class="{{el.colorClass + '3'}}" width="100%">{{el.id}}</label>
+            </div>
+
+            <div class="codeTab">
+              <label class="{{el.colorClass + '4'}}" height="100%" width="30%" on-click="{{_viewElCode}}">View Code</label>
+            </div>
+
+            <div  class="deleteEl {{el.colorClass + '4'}}" component_id="{{el.element.id}}" on-click="{{_deleteEvent}}">X</div>
 
             <div class="connectors-in" >
               <!-- Input -->
@@ -196,7 +202,7 @@
       _elements: [],
       _connections: [],
 
-      _selElement: null,
+      _selElement: undefined,
       _selectedMethod: null,
       _publicMethods: null,
 
@@ -221,6 +227,10 @@
           this.addNewElToConnector(obj, 0, 0);
       },
 
+      ready: function() {
+        // this.focus();
+        this.tabIndex = 0;
+      },
 
       addNewElToConnector: function(newEl, left, top){
 
@@ -251,10 +261,11 @@
       _processNewElement: function(newEl, top, left, newElCategoryIndex) {
         var self = this;
 
-        newEl.id = this._generateUniqueId(newEl.tagName.toLowerCase());
-
         var cat = this.$.component_list.mainCategories[newElCategoryIndex];
         var colorClass = this._colors[newElCategoryIndex];
+
+        newEl.id = this._generateUniqueId(newEl.tagName.toLowerCase());
+        newEl.className = cat;
 
         var elItem = {  element: newEl, 
                                       id: newEl.id,
@@ -292,12 +303,17 @@
         this._initCustomMethodsObj(elItem);
       },
 
-      _deleteElement: function(e) {
+      // find the ID of the event target that was clicked
+      _deleteEvent: function(e) {
+        var compId = e.target.getAttribute('component_id');
+        this._deleteElement(compId);
+      },
 
+      // delete element by ID
+      _deleteElement: function(compId) {
         if(confirm('Do you want to remove this element from the sketch?')) {
 
           var self = this;
-          var compId = e.target.getAttribute('component_id');
           var embeddedEl = self.querySelector('#'+compId);
           var elInArray = self.findElById(compId);
 
@@ -502,7 +518,26 @@
           document.body.appendChild(dragImgEl);
           e.dataTransfer.setDragImage(dragImgEl,-200,-200);          
           
-        },                            
+          // select this element
+          var wrapperEl = selection;
+          if(this._selWrapper) {
+            this._selWrapper.classList.remove('selected-element');
+          }
+          this._selWrapper = wrapperEl;
+          this._selWrapper.classList.add('selected-element');
+
+          var elementId = wrapperEl.id;
+          elementId = elementId.substring(8, elementId.length);
+
+          // reset this._selElement
+          try {
+            this._selElement = this.findElById(elementId).element;
+          } catch(e) {
+            // set selection to destination
+            this._selElement = this._elements[0];
+          }
+
+        },
 
         dragWrapper: function(e, details, selection) {
 
@@ -582,6 +617,13 @@
           var elementId = wrapperEl.id;
           elementId = elementId.substring(8, elementId.length);
 
+          // remove selected from this._selElement
+          // if (typeof(this._selElement) !== 'undefined' && typeof(this._selElement) !== 'undefined') {
+          //   this._selElement.className.replace
+          //       ( /(?:^|\s)selected(?!\S)/g , '' )
+          // }
+
+          // reset this._selElement
           this._selElement = this.findElById(elementId).element;
 
           // if(this.$.input_table) {
@@ -829,9 +871,10 @@
             }
           }
 
-          var marker = e.path[1]; 
-          console.log(marker);
-          marker.classList.remove('highlighted');
+          // var marker = e.path[1]; 
+          // console.log(marker);
+          this.bezier.classList.remove('highlighted');
+          this.bezier = null;
 
           this._drawConnections();
 
@@ -1325,8 +1368,8 @@
 
       },
 
-      // mousedn helps detect if a bezier was clicked
-      mousedn: function(e) {
+      // clickInContainer helps detect if a bezier was clicked
+      clickInContainer: function(e) {
         var className = e.toElement.className;
         if ( className.baseVal && className.baseVal.indexOf('cnxn') > -1 ) {
           this.clickedOnConnection(e);
@@ -1470,6 +1513,9 @@
         this._listPublicMethods(this._selElement);
         this._showCode(this._selElement);
         // this._methodChanged();
+
+        // remove 'selected' class from other elements, add 'selected' class to this
+        // this._selElement.className = this._selElement.className + ' selected';
       },
 
       _methodChanged: function(e, detail) {
@@ -1481,6 +1527,37 @@
         this._selectedMethod = detail.item.getAttribute('label');
         console.log(this._selectedMethod);
         this._showCode(this._selElement);
+      },
+
+      _viewElCode: function(e) {
+        console.log(e)
+      },
+
+
+      // KEY EVENTS
+      keydownHandler: function(e) {
+        this.keypressHandler(e);
+      },
+
+      keypressHandler: function(e) {
+        var self = this;
+
+        switch(e.which) {
+          // if deleteKey:
+          case(8):
+            e.preventDefault();
+            e.stopPropagation();
+            // if bezier was selected, delete that. Otherwise, delete element
+            if (self.bezier) {
+              self.deleteConnection();
+            } else {
+              self._deleteElement(self._selElement.id);
+            }
+
+            break;
+          default:
+            break;
+        } 
       }
 
 

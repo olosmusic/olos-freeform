@@ -7,44 +7,78 @@
 
 /* As hex codes */
 
+.source {
+      background: #FFF1ED;
+      /*opacity:.5;*/
+}
 .a0 { color: #AA3939 } /* Main Primary color */
 .a1 { color: #FF4D4D }
 .a2 { border: 2px solid #F64E4E }
+.a2.selected-element {
+border: 5px solid #F64E4E !important;
+z-index: 200;
+padding:-5px;
+}
 .a3 { background: #AA3939;
 /*      color: #5E2121}*/
       color: #ffffff }
 .a4 { background: #130707;
       color: #F64E4E }
 
+.control {
+      background:#FFF4D1;
+}
 .b0 { color: #CEB06C } /* Main Secondary color (1) */
 .b1 { color: #FFC236 }
 .b2 { 
       border: 2px solid #FFCC59;
     }
+.b2.selected-element {
+border: 5px solid #FFCC59 !important;
+padding:-5px;
+z-index: 200;
+}
 .b3 { background: #CEB06C;
 /*      color: #897B5A }*/
       color: #ffffff }
 .b4 { background: #34332F;
       color: #FFC236  }
 
+
+.visualize {
+      background: #B6B7C2;
+}
 .c0 { color: #42569D } /* Main Secondary color (2) */
 .c1 { color: #556ECA }
 .c2 { border: 2px solid #516BC9 }
+.c2.selected-element {
+border: 5px solid #516BC9 !important;
+padding:-5px;
+z-index: 200;
+}
 .c3 { background: #42569D;
       /*color: #354271 }*/
       color: #ffffff }
 .c4 { background: #33406F;
       color: #fffECA  }
 
+.filter {
+      background: #F7FFF2;
+}
 .d0 { color: #68AF68 }  /* Main Complement color */
 .d1 { color: #60FF60 }
 .d2 { border: 2px solid #63DE63 }
+.d2.selected-element {
+border: 5px solid #63DE63 !important;
+padding:-5px;
+z-index: 200;
+}
+
 .d3 { background: #68AF68;
       /*color: #456245 }*/
       color: #ffffff }
 .d4 { background: #000000;
       color: #60FF60 }
-
 
 
 /* As RGBa codes */
