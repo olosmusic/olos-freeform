@@ -1441,9 +1441,9 @@
           dst[dstPort].push(src[srcPort]);
         } else if (src[srcPort] instanceof AudioNode) {
           try {
-            src[srcPort].connect(scriptProcessor);
             console.log('connect audio param to script processor');
             var scriptProcessor = audioContext.createScriptProcessor();
+            src[srcPort].connect(scriptProcessor);
             dst[dstPort] = scriptProcessor;
           } catch(e) {
             console.log(e);
