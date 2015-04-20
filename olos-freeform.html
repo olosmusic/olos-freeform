@@ -9,6 +9,12 @@
 <link rel="import" href="../olos-component-list/olos-component-list.html">
 <link rel="import" href="../olos-code-editor/olos-code-editor.html">
 
+
+<link rel="import" href="../olos-doc-viewer/olos-doc-viewer.html">
+
+<link rel="import" href="../paper-dialog/paper-dialog.html">
+
+
 <link rel="stylesheet" href="colors.css">
 
 <polymer-element name="olos-freeform" attributes="" on-keydown="{{keydownHandler}}" on-keypress="{{keypressHandler}}">
@@ -16,74 +22,95 @@
     <link rel="stylesheet" href="olos-freeform.css">
     <link rel="stylesheet" href="colors.css">
 
+    <!-- header -->
+    <core-toolbar class="small">
+
+      <paper-input-decorator label="Enter a name">
+       <input id="filename" is="core-input">
+       </paper-input-decorator>
+
+<!--       <paper-icon-button id="new"
+        icon="autorenew"></paper-icon-button>
+      <paper-icon-button id="undo"
+        icon="undo"></paper-icon-button>
+      <paper-icon-button id="redo"
+        icon="redo"></paper-icon-button>
+ -->
+      <paper-icon-button id="save"
+        icon="save"></paper-icon-button>
+      <paper-icon-button id="open"
+        icon="folder"></paper-icon-button>
+      <paper-icon-button id="info"
+        icon="info-outline"></paper-icon-button>
+
+      <paper-icon-button id="clear"
+        icon="clear" on-click={{_environmentClear}}></paper-icon-button>
+
+      <paper-icon-button id="morebutton"
+        icon="more-vert"></paper-icon-button>
+
+    </core-toolbar>
+
+
     <core-icon-button id="showDataBtn" class="active" icon="view-module" on-click="{{showDataBtn}}" alt="show component data">
       <span>show code</span>
     </core-icon-button>
 
-    <div class="toolsPlaceholder"></div>
 
-    <div id="tools">
-      <div class="splitterContainer">
+      <paper-dialog id="codeDialog" backdrop transition="core-transition-center" heading="var {{_selElement.varName}}">
+          <label>Current Method: </label>
+          <paper-dropdown-menu id="methodDropdown" label="{{_selectedMethod}}">
+            <paper-dropdown class="dropdown">
+              <core-menu selected="0" id="selector" on-core-select="{{_methodChanged}}" class="menu">
+                <template repeat="{{meth, index in _publicMethods}}">
+                  <paper-item label="{{meth}}">{{meth}}</paper-item>
+                </template>
+              </core-menu>
+            </paper-dropdown>
+          </paper-dropdown-menu>
+        </div>
+        <olos-code-editor id="codeeditor"></olos-code-editor>
+    </paper-dialog>
 
-        <div class="inspectorControls" flex vertical layout>
+    <paper-dialog id="infoDialog" backdrop transition="core-transition-center" heading="var {{_selElement.varName}}">
+      <!-- <olos-doc-viewer flex style=" position:fixed; right:0px; top: 400px; width:350px; height:600px; background-color:#fdffdf" id="docViewer"> -->
 
-          <label class="component-list-label">Drag components into canvas:</label>
-          <!-- <div class="paletteTree"> -->
-            <olos-component-list id="component_list"></olos-component-list>
+      <olos-doc-viewer flex style="width:720px; height:600px; background-color:#fdffdf" id="docViewer">
 
-          <!-- </div> -->
+      </olos-doc-viewer>
+    </paper-dialog>
 
-        <div id="destino" width="30" height="30">
+
+      <label class="component-list-label">Drag components into canvas:</label>
+      <olos-component-list id="component_list"></olos-component-list>
+
+      <div class="destBar" vertical layout>
+        <div id="destino" width="300" height="30">
           <!-- destination -->
           <template repeat="{{destination in destinations}}">
-
             <div class="wrapper" id="wrapper" on-click="{{wrapperClicked}}" draggable="false">
-          <div class="wrapper {{destination.name}} {{destination.colorClass + '2'}}" id="wrapper-{{destination.element.id}}" component-id="{{destination.element.id}}" on-click="{{wrapperClicked}}" 
-          style="top: {{destination.top}}px; left: {{destination.left}}px; transform: {{destination.transform}}; width: {{destination.width}}px; height: {{destination.height}}px" 
-          on-click="{{wrapperClicked}}" on-dragStart="{{dragStartWrapper}}" on-drag="{{dragWrapper}}" on-dragend="{{dragEndWrapper}}" draggable="true"><!-- on-drop="{{droppedOnInArrow}}" needed? -->
+            <div class="wrapper {{destination.name}} {{destination.colorClass + '2'}}" id="wrapper-{{destination.element.id}}" component-id="{{destination.element.id}}" on-click="{{wrapperClicked}}" style="top: {{destination.top}}px; left: {{destination.left}}px; transform: {{destination.transform}}; width: {{destination.width}}px; height: {{destination.height}}px" on-click="{{wrapperClicked}}" on-dragStart="{{dragStartWrapper}}" on-drag="{{dragWrapper}}" on-dragend="{{dragEndWrapper}}" draggable="true"><!-- on-drop="{{droppedOnInArrow}}" needed? -->
 
               <!-- Input -->
               <div class="connectors-in" >
                 <ul>
                   <template repeat="{{ins in destination.element.publish | _checkForInputAttr}}">
-                      <li class="{{destination.element.id}}-{{ins}} arrow in-arrow" on-dragover="{{dragOverInArrow}}" 
-                      on-drop="{{droppedOnInArrow}}" on-dragenter="{{dragEnterInArrow}}" on-dragleave="{{dragLeaveInArrow}}" on-click="{{arrowClicked}}">
-                        <div class="inputMarker">
-                          <div class="delete" on-click="{{deleteConnection}}">x</div>
-                          <span class="drop-zone">{{ins}}</span>
-                        </div>
-                      </li>
+                    <li class="{{destination.element.id}}-{{ins}} arrow in-arrow" on-dragover="{{dragOverInArrow}}" 
+                    on-drop="{{droppedOnInArrow}}" on-dragenter="{{dragEnterInArrow}}" on-dragleave="{{dragLeaveInArrow}}" on-mouseenter="{{dragEnterInArrow}}" on-mouseleave="{{dragLeaveInArrow}}" on-click="{{arrowClicked}}">
+                      <svg class="inputMarkerSVG" viewBox="-20 0 20 20">
+                        <ellipse cx="-15" cy="10" rx="5" ry="5"></ellipse>
+                        <div class="delete" on-click="{{deleteConnection}}">x</div>
+                      </svg>
+                    <span class="drop-zone tooltip">{{ins}}
+                    </span>
+                    </li>
                   </template>
                 </ul>
               </div>
             </div>
           </template>
-          <!-- / destination-->
-
         </div>
-
-        </div>
-        <!-- <core-splitter direction="down"></core-splitter> -->
-
-        <div class="sidebar" vertical layout>
-            <label>Current Method: </label>
-            <paper-dropdown-menu id="methodDropdown" label="{{_selectedMethod}}">
-              <paper-dropdown class="dropdown">
-                <core-menu selected="0" id="selector" on-core-select="{{_methodChanged}}" class="menu">
-                  <template repeat="{{meth, index in _publicMethods}}">
-                    <paper-item label="{{meth}}">{{meth}}</paper-item>
-                  </template>
-                </core-menu>
-              </paper-dropdown>
-          </paper-dropdown-menu>
-
-
-          <olos-code-editor id="codeeditor"></olos-code-editor>
-
-        </div>
-
-      </div>
-    </div> <!-- end tools-->
+      </div> <!-- end dest bar -->
 
 
     <div id="container" on-mousedown="{{clickInContainer}}" on-drop="{{droppedInContainer}}" on-dragover="{{draggedOverContainer}}">
@@ -93,66 +120,82 @@
       <!-- Components and connector dots --> 
       <!--<template if="{{_positioned}}">-->
 
+
         <template repeat="{{el, index in _elements }}">
           <template if="{{el.id | noDest}}">
 
             <div class="wrapper {{el.name}} {{el.colorClass + '2'}}" id="wrapper-{{el.element.id}}" component-id="{{el.element.id}}" on-click="{{wrapperClicked}}" 
-            style="top: {{el.top}}px; left: {{el.left}}px; transform: {{el.transform}}; width: {{el.width}}px; height: {{el.height}}px" 
+            style="top: {{el.top}}px; left: {{el.left}}px; transform: {{el.transform}}; width: {{el.width}}px; height: {{el.height}}px;" 
             on-click="{{wrapperClicked}}" on-dragStart="{{dragStartWrapper}}" on-drag="{{dragWrapper}}" on-dragend="{{dragEndWrapper}}" draggable="true"><!-- on-drop="{{droppedOnInArrow}}" needed? -->
 
             <div>
-              <label class="{{el.colorClass + '3'}}" width="100%">{{el.id}}</label>
+              <label class="{{el.colorClass + '3'}} labelTab" width="100%" style="overflow:hidden;">olos.{{el.varName}}</label>
             </div>
 
-            <div class="codeTab">
-              <label class="{{el.colorClass + '4'}}" height="100%" width="30%" on-click="{{_viewElCode}}">View Code</label>
+            <div class="{{el.colorClass + '4'}} codeTab" height="100%" width="30%" on-click="{{_elCodeButtonClicked}}">&lt &#92; &gt
             </div>
+
+            <div  class="elInfo {{el.colorClass + '5'}}" component_id="{{el.element.id}}" on-click="{{_elInfoButtonClicked}}">i</div>
 
             <div  class="deleteEl {{el.colorClass + '4'}}" component_id="{{el.element.id}}" on-click="{{_deleteEvent}}">X</div>
 
+            <!-- Input -->
             <div class="connectors-in" >
-              <!-- Input -->
-              
-              <ul>
-                <template repeat="{{ins in el.element.publish | _checkForInputAttr}}">
-                     
+              <template repeat="{{ins in el.element.publish | _checkForInputAttr}}">
+                <ul>
                     <li class="{{el.element.id}}-{{ins}} arrow in-arrow" on-dragover="{{dragOverInArrow}}" 
-                    on-drop="{{droppedOnInArrow}}" on-dragenter="{{dragEnterInArrow}}" on-dragleave="{{dragLeaveInArrow}}" on-click="{{arrowClicked}}">
-                      <div class="inputMarker">
-                        <div class="delete" on-click="{{deleteConnection}}">x</div>
-                        <span class="drop-zone">{{ins}}</span>
-                      </div>
+                    on-drop="{{droppedOnInArrow}}" on-dragenter="{{dragEnterInArrow}}" on-dragleave="{{dragLeaveInArrow}}" on-mouseenter="{{dragEnterInArrow}}" on-mouseleave="{{dragLeaveInArrow}}" on-click="{{arrowClicked}}">
+                      <svg class="inputMarkerSVG" viewBox="-20 0 20 20">
+                        <ellipse cx="-15" cy="10" rx="5" ry="5"></ellipse>
+                      </svg>
+                      <div class="delete" on-click="{{deleteConnection}}">x</div>
+                    <span class="drop-zone tooltip">{{ins}}
+                    </span>
+
                       <!--{{ins}}-->
                     </li>
-                </template>
-
-              </ul>
-
-              <!-- Output -->
-            </div>
-            <content select="#{{el.id}}"></content>
-
-            <div class="connectors-out" >
-              <template if="{{el.element.publish | _checkForOutputAttr}}">
-                <div id="{{index}}"  class="{{el.element.id}} arrow out-arrow" 
-                  on-drag="{{dragOutArrow}}" on-dragstart="{{dragOutArrowStart}}" on-dragend="{{dragOutArrowEnd}}"  
-                   on-click="{{arrowClicked}}" draggable="true" style="z-index:100">
-                  <div class="outputMarker" style="z-index:101"></div>
-                </div>
+                </ul>
               </template>
             </div>
 
             <!-- audioParams -->
             <div class="connectors-params">
               <template repeat="{{params in el.element.publish | _checkForAudioParams}}">
-                   
+                <ul>
                   <li class="{{el.element.id}}-{{params}} arrow param-arrow" on-dragover="{{dragOverParamArrow}}" 
-                  on-drop="{{droppedOnParamArrow}}" on-dragenter="{{dragEnterParamArrow}}" on-dragleave="{{dragLeaveParamArrow}}" on-click="{{arrowClicked}}">
-                    <div class="paramMarker">
+                  on-drop="{{droppedOnParamArrow}}" on-dragenter="{{dragEnterParamArrow}}" on-dragleave="{{dragLeaveParamArrow}}" on-mouseenter="{{dragEnterParamArrow}}" on-mouseleave="{{dragLeaveParamArrow}}" on-click="{{arrowClicked}}">
+                    <!-- <div class="paramMarker"> -->
+                      <svg class="paramMarkerSVG" viewBox="-20 0 20 20">
+                      <ellipse cx="-10" cy="10" rx="5" ry="5"></ellipse>
+                      </svg>
                       <div class="delete" on-click="{{deleteConnection}}">x</div>
                       <span class="drop-zone">{{params}}</span>
-                    </div>
+
+                    <!-- </div> -->
                   </li>
+                </ul>
+              </template>
+            </div>
+
+            <content select="#{{el.id}}"></content>
+
+            <!-- Output -->
+            <div class="connectors-out" >
+              <template if="{{el.element.publish | _checkForOutputAttr}}">
+                <div id="{{index}}"  class="{{el.element.id}} arrow out-arrow" 
+                  on-drag="{{dragOutArrow}}" on-dragstart="{{dragOutArrowStart}}" on-dragend="{{dragOutArrowEnd}}"  
+                   on-click="{{arrowClicked}}" draggable="true" style="z-index:100" >
+                  <!-- <div class="outputMarker" style="z-index:101"></div> -->
+                  <svg class="outputMarker" id="marker" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+                     viewBox="9 0 20 15" enable-background="new 9 0 20 15" xml:space="preserve">
+
+                <path d="M9.6,13.2c0.1-0.3,0.1-0.7,0.3-1c1.4-1.7,1.4-3,0-4.6C9.7,7.4,9.7,7,9.6,6.4C12.5,8.4,12.5,11.5,9.6,13.2z"/>
+                <path d="M10.5,14.1c0.1-0.3,0.1-0.7,0.3-1c1.4-1.7,1.9-3.6,0.6-5.4c-1.6-2.3-1.1-2-1.2-2.6C13.1,7.2,13.4,12.4,10.5,14.1z"/>
+                <path d="M8.9,12c0.2-0.7,0.6-1.4,0.6-2.1c0-0.6-0.4-1.3-0.5-2c1.8,1.1,1.9,2.8,0.2,4.2C9.2,12,9,12,8.9,12z"/>
+                </svg>
+
+
+                <!-- </div> -->
               </template>
             </div>
 
@@ -171,6 +214,7 @@
 
   <script type="text/javascript" src="../p5js/lib/p5.js"></script>
   <script type="text/javascript" src="../p5js/lib/addons/p5.sound.js"></script>
+  <script src="../Tone/Tone.js"type="text/javascript"></script>
 
   <script>
 
@@ -181,7 +225,6 @@
       }
     };
 
-
     // set up global p5
     function setup() {
       noLoop();
@@ -189,8 +232,11 @@
     }
 
     // GLOBAL
-    if (window.p5) {
+    if (window.p5 && window.p5.soundOut) {
       var audioContext = p5.prototype.getAudioContext();
+    } else {
+      // TO DO: add shims
+      audioContext = new AudioContext();
     }
 
     var _dragObj = {};
@@ -230,6 +276,10 @@
       ready: function() {
         // this.focus();
         this.tabIndex = 0;
+
+        // assign olos variable to window
+        window.olos = this;
+
       },
 
       addNewElToConnector: function(newEl, left, top){
@@ -238,11 +288,15 @@
         var newElCategoryIndex = newEl[1];
 
         var newEl = document.createElement(newElName);
+        newEl.name = newElName;
 
         this.$.component_list.checkAndImport(newEl, function() {
 
-          newEl.style.width = '100%';
-          newEl.style.height = '100%';
+          // newEl.style.width = '100%';
+          // newEl.style.height = '100%';
+          // newEl.width = 400;
+          // newEl.height = 3000;
+
 
           if (newElName.indexOf('destination') > -1){
             console.log('destino!');
@@ -265,15 +319,18 @@
         var colorClass = this._colors[newElCategoryIndex];
 
         newEl.id = this._generateUniqueId(newEl.tagName.toLowerCase());
+        newEl.varName = this._generateVarName(newEl.id);
         newEl.className = cat;
-
+        newEl.style.width = '100%';
+        newEl.style.height = '100%';
         var elItem = {  element: newEl, 
                                       id: newEl.id,
                                       name: newEl.tagName.toLowerCase(), 
                                       top: top,
                                       left: left,
                                       category: cat,
-                                      colorClass: colorClass
+                                      colorClass: colorClass,
+                                      varName: newEl.varName
                                   };
 
 
@@ -289,60 +346,61 @@
         } else {
           elItem.resizable = true;
         }
-        this._elements.push(elItem);
-        
-        // }
 
+        self._addElementVar(elItem)
 
-        // also make it global
-        window._elements = this._elements;
-        window.olos = this;
 
         // TO DO: make objects public
 
         this._initCustomMethodsObj(elItem);
+
+        // trigger drag event
+
       },
 
       // find the ID of the event target that was clicked
       _deleteEvent: function(e) {
         var compId = e.target.getAttribute('component_id');
-        this._deleteElement(compId);
+        if(confirm('Do you want to remove this element from the sketch?')) {
+          this._deleteElement(compId);
+        }
       },
 
       // delete element by ID
       _deleteElement: function(compId) {
-        if(confirm('Do you want to remove this element from the sketch?')) {
 
-          var self = this;
-          var embeddedEl = self.querySelector('#'+compId);
-          var elInArray = self.findElById(compId);
+        var self = this;
+        var embeddedEl = self.querySelector('#'+compId);
+        var elInArray = self.findElById(compId);
 
-          //remove all connections
-          self.removeAllConnectionsFromElement(compId)
+        // remove element from elements array (which removes it from the shadowDOM)
+        var filteredEls = self._elements.filter(function(el) {
+            return el.element.id!==compId;
+        });
+        self._elements = filteredEls;
 
-          // remove element from elements array (which removes it from the shadowDOM)
-          var filteredEls = self._elements.filter(function(el) {
-              return el.element.id!==compId;
-          });
-          self._elements = filteredEls;
+        // remove _customMethods associated with this element
+        var newCustomMethods = {};
 
-          // remove _customMethods associated with this element
-          var newCustomMethods = {};
-
-          for (var i in self._customMethods) {
-            if (i !== compId) {
-              newCustomMethods[i] = self._customMethods[i];
-            }
+        for (var i in self._customMethods) {
+          if (i !== compId) {
+            newCustomMethods[i] = self._customMethods[i];
           }
-
-          self._customMethods = newCustomMethods;
-
-          // remove elements
-          self.removeChild(embeddedEl);
-
-          // dispose will remove this element's audio nodes and animation loops / p5 sketches / nexusUI
-          embeddedEl.dispose();
         }
+
+        self._customMethods = newCustomMethods;
+
+        // remove elements
+        self.removeChild(embeddedEl);
+
+        // remove var from olos object
+        this[embeddedEl.varName] = null;
+
+        //remove all connections
+        self.removeAllConnectionsFromElement(compId)
+
+        // dispose will remove this element's audio nodes and animation loops / p5 sketches / nexusUI
+        embeddedEl.dispose();
       },
 
       removeAllConnectionsFromElement: function(elId) {
@@ -470,13 +528,17 @@
 
           var element = this.findElById(elementInsideId);
 
-          element.width = w; 
-          element.height = h; 
+          element.width = w;
+          element.height = h;
 
           // element.shadowRoot.container.width = w;
           // element.shadowRoot.container.height = h;
 
           self._drawConnections();
+
+          // RESIZE
+          self.resizeEl(elementInside);
+          // <-- end Resize
 
           e.stopPropagation();
           e.preventDefault();
@@ -486,7 +548,7 @@
 
         dragResizeEnd: function(e, details, selection) {
 
-          var wrapper = null;
+          var wrapper = null, self = this;
 
           if(e.path && e.path.length>0 &&  e.path[0].classList.contains('resize')>0) {
             
@@ -497,16 +559,18 @@
           var elementInsideId = wrapper.id.replace('wrapper-','');
           var elementInside = this.querySelector('#'+elementInsideId);
 
-          if(typeof elementInside.resize ==='function') {
-            elementInside.resize();
-          }
+          self.resizeEl(elementInside);
 
         },
 
 
         dragStartWrapper: function(e, details, selection) {
+          console.log('Drag start wrapper: ');
+          console.log(e);
 
           var target = e.target;
+          console.log('target: ' + target);
+
           target.setAttribute('start-x', e.x);
           target.setAttribute('start-y', e.y);
 
@@ -544,51 +608,61 @@
           if(e.path[0].classList && e.path[0].classList.length>0 && 
             (e.path[0].classList.contains('resize') || e.path[0].classList.contains('arrow'))) {
             return false;
-          }
+          };
 
-          var target = e.target,
-              dx = e.x - (target.getAttribute('start-x') || 0),
-              dy = e.y - (target.getAttribute('start-y') || 0);
+          try {
+            var target = e.target; // || selection; //e.target || e.path[0];
 
+            // for(var i = 0; i< e.path.length && !target; i++) {
+            //   if(e.path[i].classList.contains('wrapper')) {
+            //     target = e.path[i];
+            //   }
+            // }
+            // console.log(target.name);
 
-              // keep the dragged position in the data-x/data-y attributes, add snap residue from previous drag
-              var x = (parseFloat(target.getAttribute('data-x')) || 0) + dx + (parseFloat(target.getAttribute('residue-x')) || 0);
-              var y = (parseFloat(target.getAttribute('data-y')) || 0) + dy + (parseFloat(target.getAttribute('residue-y')) || 0);
-
-              sx = Math.round(x/this._snapX)*this._snapX;
-              sy = Math.round(y/this._snapY)*this._snapY;
-
-              target.setAttribute('residue-x', x - sx );
-              target.setAttribute('residue-y', y - sy);
+            var dx = e.x - (target.getAttribute('start-x') || 0),
+                dy = e.y - (target.getAttribute('start-y') || 0);
 
 
-              // translate the element. 
-              // last dragMove call passes e.x=0 and e.y=0 which causes neg x,y values. this if avoids that
-              if(e.x!==0 ||  e.y!==0)
-              {
-              /*
-                target.style.webkitTransform =
-                      target.style.transform = 'translate(' + sx + 'px, ' + sy + 'px)';
-              */
+                // keep the dragged position in the data-x/data-y attributes, add snap residue from previous drag
+                var x = (parseFloat(target.getAttribute('data-x')) || 0) + dx + (parseFloat(target.getAttribute('residue-x')) || 0);
+                var y = (parseFloat(target.getAttribute('data-y')) || 0) + dy + (parseFloat(target.getAttribute('residue-y')) || 0);
 
-                var componentId = target.getAttribute('component-id');
+                sx = Math.round(x/this._snapX)*this._snapX;
+                sy = Math.round(y/this._snapY)*this._snapY;
 
-                this.findElById(componentId).transform = 'translate(' + sx + 'px, ' + sy + 'px)';
+                target.setAttribute('residue-x', x - sx );
+                target.setAttribute('residue-y', y - sy);
 
-                // update the posiion attributes
-                // 
-                target.setAttribute('data-x', sx);
-                target.setAttribute('data-y', sy);
-                
 
-                target.setAttribute('start-x', e.x);
-                target.setAttribute('start-y', e.y);
+                // translate the element. 
+                // last dragMove call passes e.x=0 and e.y=0 which causes neg x,y values. this if avoids that
+                if(e.x!==0 ||  e.y!==0)
+                {
+                /*
+                  target.style.webkitTransform =
+                        target.style.transform = 'translate(' + sx + 'px, ' + sy + 'px)';
+                */
 
-                this._drawConnections();
+                  var componentId = target.getAttribute('component-id');
 
-              }
-                
-            
+                  this.findElById(componentId).transform = 'translate(' + sx + 'px, ' + sy + 'px)';
+
+                  // update the position attributes
+                  // 
+                  target.setAttribute('data-x', sx);
+                  target.setAttribute('data-y', sy);
+                  
+
+                  target.setAttribute('start-x', e.x);
+                  target.setAttribute('start-y', e.y);
+
+                  this._drawConnections();
+
+                }
+           } 
+           catch(e){console.log('ERROR: ' + e)}
+
         }, 
 
         dragEndWrapper: function(e, details, selection) {
@@ -680,22 +754,35 @@
 
         },
 
+        resizeEl: function(elementInside) {
+          if(typeof elementInside.resize ==='function') {
+            elementInside.resize();
+          }
+        },
+
 
         // IN ARROWS
         dragOverInArrow: function(e, details, selection) {
-
           //important! needed to allow drop
           e.preventDefault();
 
-        },  
+        },
 
         dragEnterInArrow: function(e, details, selection) {
           e.target.classList.add('drag-over');
-        },                  
+        },
 
         dragLeaveInArrow: function(e, details, selection) {
           e.target.classList.remove('drag-over');
-        },                  
+        },
+
+        mouseEnterCnx: function(e, details, selection) {
+          e.target.classList.add('drag-over');
+        },
+
+        mouseLeaveCnx: function(e, details, selection) {
+          e.target.classList.remove('drag-over');
+        },
 
         droppedOnInArrow: function(e, details, selection) {
 
@@ -709,12 +796,14 @@
               source = self.findElById(self.draggedEl.classList[0]),
               target = self.findElById(targetElementId);
 
+          // console.log(source);
+          // console.log(selection);
 
           this._connectAttributes(source, 'output', target, targetField);
 
           self._drawConnections();
 
-          e.stopPropagation();          
+          e.stopPropagation();
 
         }, 
 
@@ -799,14 +888,9 @@
 
               marker.classList.add('highlighted');
               bezier.classList.add('highlighted');
-
             }
-
             // this.bezier = null;
-
           }
-
-
         },
 
 
@@ -826,7 +910,7 @@
           if (this.bezier) {
             var splitID = this.bezier.id.split('-');
             src = splitID[0]+'-'+splitID[1]+'-'+splitID[2];
-            console.log(src);
+            // console.log(src);
             elementInsideId = splitID[3] + '-' + splitID[4] + '-' + splitID[5];
           }
           else {
@@ -843,23 +927,15 @@
           // delete all connections / reconnect everything
           var srcNode, srcElem;
           for (var i = 0; i < this._connections.length; i++) {
-            console.log(this._connections[i].target.id);
-            console.log(elementInsideId);
-            console.log(this._connections[i].source.id);
-            console.log(src);
+            // console.log('orig cnx: ' + this._connections[i].target.id, elementInsideId, this._connections[i].source.id, src);
 
             if (this._connections[i].target.id === elementInsideId && this._connections[i].source.id === src) {
               srcNode = this._connections[i].source.field;
               srcElem = this._connections[i].source.element;
-              console.log('disconnecting');
               srcElem[srcNode].disconnect();
+              this._connections.splice(i,1);
             }
           }
-
-          // remove connection with this id
-          this._connections = this._connections.filter(function(connection) {
-            return connection.target.id!==elementInsideId;
-          });
 
           // if srcNode was connected to any other nodes, re-connect them
           for (var j = 0; j < this._connections.length; j++) {
@@ -867,7 +943,11 @@
             if (src.element === srcElem && src.field === srcNode) {
               var dstNode = this._connections[j].target.field;
               var dstElem = this._connections[j].target.element;
-              srcElem[srcNode].connect(dstElem[dstNode]);
+              try {
+                srcElem[srcNode].connect(dstElem[dstNode]);
+              } catch(e) {
+                console.log(e);
+              }
             }
           }
 
@@ -944,19 +1024,13 @@
           var srcClone = {id: source.id, name: source.name, element: source.element};
           var targetClone = {id: target.id, name: target.name, element: target.element};
 
-
-          // target.element[targetField] = source.element[sourceField]; 
-
           targetClone.field = targetField;
           srcClone.field = sourceField;
 
-          //self.updateConnections();
-          
-          //push the connections anyways because it will be deleted above.
-          self._connections.push({source: srcClone, target: targetClone});
-
-          // make the actual connection
-          this.makeConnection(source.element, sourceField, target.element, targetField);
+          // make the actual connection, returns true if connection was made
+          if ( this.makeConnection(source.element, sourceField, target.element, targetField) ) {
+            this._connections.push({source: srcClone, target: targetClone});
+          }
 
           return true;
         }
@@ -968,9 +1042,9 @@
         var self = this;
 
 
-        var arrowOffsetY = 7;
-        var arrowOffsetX = 7;
-        var bezierCurveX = 70;  // the larger the value the smoother the curve
+        var arrowOffsetY = 16;
+        var arrowOffsetX = 0;
+        var bezierCurveX = 45;  // the larger the value the smoother the curve
 
 
         //clear all paths. since it is not done often it is fine to do it in a not optimized way
@@ -998,9 +1072,8 @@
 
           var svgRect = self.$.svg.getBoundingClientRect();
 
-          var paramOffset = (conn.target.field.indexOf('Param') > -1) ? [targetRect.width/2, -8] : [0,0];
-
-          console.log('offset: ' + paramOffset);
+          //
+          var paramOffset = (conn.target.field.indexOf('Param') > -1) ? [0, targetRect.height - 25] : [0,0];
 
           var startX = srcRect.right - svgRect.left + arrowOffsetX; //srcRect.left + srcRect.width + 30 - containerOffsetX;
           var startY = srcRect.top - svgRect.top + arrowOffsetY;
@@ -1051,9 +1124,6 @@
                     if(attr!=='input' && attr!=='output' && el[attr]) {
                       domEl[attr] = el[attr]; 
                     }
-
-                               
-
 
                   });
                 }
@@ -1225,6 +1295,7 @@
       _generateUniqueId: function(elName){
           var self = this;
           var num = 0;
+
           var tagsWithSameName = self._elements.filter(function(elem){return elem.name == elName});
           
           if(tagsWithSameName){
@@ -1236,6 +1307,34 @@
           return uniqueId;
       }, 
 
+      // convert from an input like olos-element-name-0 to "elementName0"
+      _generateVarName: function(elId) {
+        // remove split at '-' and remove 'olos' first item from array
+        var arr = elId.split('-').slice(1);
+        var varName = '';
+
+        varName = arr[0];
+
+        // if varName has additioal stuff, like sound-file, return soundFile
+        for (var i = 1; i < arr.length; i++ ) {
+          var capString = arr[i].charAt(0).toUpperCase() + arr[i].slice(1);
+          varName += capString;
+        }
+
+        return varName;
+      },
+
+      // store element variable name, and include it in olos.elements Array
+      _addElementVar: function(elItem) {
+        this._elements.push(elItem);
+
+        olos[elItem.varName] = elItem.element;
+      },
+
+      // set element variable name to null, and remove it from olos.elements Array
+      _removeElementVar: function(elItem) {
+
+      },
 
       _createBezierPath: function(startX, startY, endX, endY, handleOffsetX) {
 
@@ -1336,21 +1435,32 @@
           console.log('audio param connection!');
           src[srcPort].connect(dst[dstPort]);
         } else if (dst[dstPort] instanceof Array) { // otherwise it is data
+          console.log(dst[dstPort]);
           console.log('add to destination array');
           // add to input array
           dst[dstPort].push(src[srcPort]);
-        } else {
-          console.log('trying to make a data connection');
+        } else if (src[srcPort] instanceof AudioNode) {
+          try {
+            src[srcPort].connect(scriptProcessor);
+            console.log('connect audio param to script processor');
+            var scriptProcessor = audioContext.createScriptProcessor();
+            dst[dstPort] = scriptProcessor;
+          } catch(e) {
+            console.log(e);
+            return false;
+          }
+        }
+        else {
+          console.log(src[srcPort]);
+          console.log('could not make a connection');
+          return false;
         }
 
-        this._drawConnections();
+        return true;
       },
 
         // called by connectorShape object, this = the instance of that object when it deletes itself.
       clickedOnConnection: function(e) {
-        console.log(e);
-        console.log(e.toElement.id);
-
         // this.bezier = the most recently clicked on connection
         this.bezier = this.shadowRoot.querySelector('#'+e.toElement.id);
 
@@ -1378,7 +1488,7 @@
 
       // list public methods in dropdown
       _listPublicMethods: function(el) {
-        var codeEditor = this.$.codeeditor;
+        // var codeEditor = this.$.codeeditor;
 
         // find this element's public methods
         var publicMethods = el.publicMethods;
@@ -1434,13 +1544,10 @@
                 row = row.substr(6);
               }
               displayCode[index] = row;
-            })
-            // console.log(displayCode.length);
-
+            });
 
             displayCode = displayCode.join('\n');
           }
-
 
           codeEditor.setValue(displayCode);
 
@@ -1507,15 +1614,31 @@
 
       // OBSERVER for selected element changed
       _selElementChanged: function() {
+
+        // TO DO: if 'undefined' show global methods
+        if (this._selElement === undefined) {
+          // this._selElement = this;
+          return;
+        }
+
         // TO DO: figure out why this doesnt show as default
         this._selectedMethod = 'No Method Selected';
         this._setupMethodDropdown(this._selElement);
         this._listPublicMethods(this._selElement);
         this._showCode(this._selElement);
+
+        // TO DO: bring back code here
         // this._methodChanged();
 
         // remove 'selected' class from other elements, add 'selected' class to this
         // this._selElement.className = this._selElement.className + ' selected';
+
+        this._updateDocs(this._selElement);
+      },
+
+      _updateDocs: function(element) {
+        var pathToHTML = '../' + element.name +'/'+ element.name + '.html';
+        this.$.docViewer.url = pathToHTML;
       },
 
       _methodChanged: function(e, detail) {
@@ -1529,10 +1652,23 @@
         this._showCode(this._selElement);
       },
 
-      _viewElCode: function(e) {
-        console.log(e)
+      // called when the tab to view this element's code is clicked
+      _elCodeButtonClicked: function(e) {
+        this.$.codeDialog.toggle()
       },
 
+      _elInfoButtonClicked: function(e) {
+        this.$.infoDialog.toggle()
+      },
+
+      _mouseLeaveOutput: function(e) {
+        // e.path[0].
+        console.log('leave');
+      },
+
+      _mouseEnterOutput: function(e) {
+        console.log('enter');
+      },
 
       // KEY EVENTS
       keydownHandler: function(e) {
@@ -1541,6 +1677,13 @@
 
       keypressHandler: function(e) {
         var self = this;
+        var focusedArea = e.path['0'].localName;
+
+        // make sure it is not a text or input area
+        if ( focusedArea.indexOf('text') > -1 || focusedArea.indexOf('input') > -1) {
+          console.log('in a text area');
+          return;
+        }
 
         switch(e.which) {
           // if deleteKey:
@@ -1553,13 +1696,57 @@
             } else {
               self._deleteElement(self._selElement.id);
             }
-
             break;
+          case(18):
+            console.log('option key');
           default:
             break;
         } 
-      }
+      },
 
+
+    // SAVE AND LOAD SESSIONS
+    _environmentSave: function() {
+      var olosData = {
+        "elements" : this._elements,
+        "connections": this._connections
+      }
+      console.log(olosData);
+    },
+
+    _environmentLoad: function() {
+
+    },
+
+    _environmentClear: function() {
+      var j;
+
+      if(confirm('Are you sure you want to clear your entire sketch?')) {
+        // dispose of every element
+        for (var j = this._elements.length -1 ; j > 0 ; j--) {
+          if (j === 0) {
+            return
+          }
+          console.log(this._elements[j].id);
+          this._deleteElement(this._elements[j].id);
+        }
+
+        // delete any remaining connections
+        for (j = this._connections.length -1 ; j > 0 ; j--) {
+          this._deleteAudioConnection(this._connections[i]);
+        }
+
+        // re-initialize variables:
+        this._selElement = undefined;
+        this.bezier = undefined;
+        this.connections = [];
+      }
+    },
+
+    _connectionsChanged: function() {
+      console.log('connections changed');
+      this._drawConnections();
+    }
 
     });
   </script>

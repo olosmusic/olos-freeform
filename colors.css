@@ -2,7 +2,10 @@
 /* Palette color codes */
 /* Palette URL: http://paletton.com/#uid=700111kllllmiU1lPuQkRbQkn2lkd1rqjW+XhGG19zfr2o00kf9pOpeRTkNwEaWha2S6xkl1t1l1GplGFYjgkXjIkz */
 
-/* Feel free to copy&paste color codes to your application */
+/* 
+      other palettes: http://paletton.com/#uid=75g0B0k++Umr+ZSFx+V+Vx6+0px; 
+
+*/
 
 
 /* As hex codes */
@@ -13,25 +16,71 @@
 }
 .a0 { color: #AA3939 } /* Main Primary color */
 .a1 { color: #FF4D4D }
-.a2 { border: 2px solid #F64E4E }
+.a2 { border: 2px solid #F64E4E;
+      background: #FFF1ED; /* same as element type */
+}
 .a2.selected-element {
 border: 5px solid #F64E4E !important;
 z-index: 200;
 padding:-5px;
 }
-.a3 { background: #AA3939;
+
+.a3 {
+      font-weight: bold;
+      background: #AA3939; 
+      /* var name */
 /*      color: #5E2121}*/
       color: #ffffff }
-.a4 { background: #130707;
-      color: #F64E4E }
+
+.a4 { 
+      /*background: #130707;*/
+      background: #34332F;
+      /*color: #F64E4E;*/
+      color:#FFF1ED; }
+.a5 { 
+      background: #AA3939;
+      color: #FFF1ED;}
+
+
+/* code and close buttons */
+.a4:hover { 
+      background: #34332F;
+      color:#88EE00; }
+.b4:hover { 
+      background: #34332F;
+      color:#88EE00; }
+.c4:hover { 
+      background: #34332F;
+      color:#88EE00; }
+.d4:hover { 
+      background: #34332F;
+      color:#88EE00; }
+
+/* info buttons */
+.a5:hover { 
+      background: #AA3939;
+      color: #88EE00;}
+.b5:hover { 
+      background: #CEB06C;
+      color: #88EE00;}
+.c5:hover { 
+      background: #42569D;
+      color:#88EE00; }
+.d5:hover { 
+      background: #68AF68;
+      color:#88EE00; }
+
+
 
 .control {
       background:#FFF4D1;
 }
 .b0 { color: #CEB06C } /* Main Secondary color (1) */
-.b1 { color: #FFC236 }
+.b1 { color: #FFC236;
+ }
 .b2 { 
       border: 2px solid #FFCC59;
+      background: #FFF4D1; /* same as element type */
     }
 .b2.selected-element {
 border: 5px solid #FFCC59 !important;
@@ -39,35 +88,56 @@ padding:-5px;
 z-index: 200;
 }
 .b3 { background: #CEB06C;
+      font-weight: bold;
+
 /*      color: #897B5A }*/
       color: #ffffff }
 .b4 { background: #34332F;
       color: #FFC236  }
+.b5 { background: #CEB06C;
+      color: #34332F }
 
 
 .visualize {
-      background: #B6B7C2;
+      /*background: #B6B7C2;*/
+      /*background: #6600EE;*/
+      /*background:#fff;*/
+      background:#34332F;
+      opacity:1;
 }
 .c0 { color: #42569D } /* Main Secondary color (2) */
 .c1 { color: #556ECA }
-.c2 { border: 2px solid #516BC9 }
+.c2 { 
+      /*border: 2px solid #516BC9;*/
+      border: 2px solid #6600EE;
+      background:#34332F;
+ }
+
 .c2.selected-element {
 border: 5px solid #516BC9 !important;
 padding:-5px;
 z-index: 200;
 }
 .c3 { background: #42569D;
+      font-weight: bold;
+
       /*color: #354271 }*/
       color: #ffffff }
-.c4 { background: #33406F;
+.c4 { background: #34332F;
+      /*background: #33406F;*/
       color: #fffECA  }
+.c5 { background: #42569D;
+      color: #ffffff;}
+
 
 .filter {
       background: #F7FFF2;
 }
 .d0 { color: #68AF68 }  /* Main Complement color */
 .d1 { color: #60FF60 }
-.d2 { border: 2px solid #63DE63 }
+.d2 { border: 2px solid #63DE63;
+      background: #F7FFF2;
+ }
 .d2.selected-element {
 border: 5px solid #63DE63 !important;
 padding:-5px;
@@ -75,11 +145,16 @@ z-index: 200;
 }
 
 .d3 { background: #68AF68;
+      font-weight: bold;
+
       /*color: #456245 }*/
       color: #ffffff }
-.d4 { background: #000000;
-      color: #60FF60 }
-
+.d4 { background: #34332F;
+      color: #68AF68;
+       }
+.d5 { background: #68AF68;
+      color: #222;
+       }
 
 /* As RGBa codes */
 

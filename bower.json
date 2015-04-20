@@ -5,6 +5,7 @@
   "main": "olos-freeform.html",
   "dependencies": {
     "polymer": "polymer/polymer#~0.5.5",
+    "paper-dialog": "polymer/paper-dialog#~0.5.5",
     "core-splitter": "polymer/core-splitter#~0.5.5"
   },
   "devDependencies": {

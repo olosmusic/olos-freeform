@@ -1,22 +1,37 @@
 		:host{
 			font-size: 12px;
-			font-family: open-sans, sans-serif;
+			/*font-family: open-sans, sans-serif;*/
+      font-family: helvetica;
 			display: block;
 			width: 100%;
 			height: 100%;
+      font-weight:200;
 		}
 
     .sidebar {
 /*      width:400px;*/
       height:50%;
       right:12px;
-      bottom:5px;
+      top:30%;
       position: absolute;
+      z-index: 150;
+    }
+
+    /* wraps the destination */
+    .destBar {
+/*      width:400px;*/
+      /*height:50%;*/
+      right:12px;
+      bottom:0%;
+      margin: 20px;
+      position: fixed;
       z-index: 150;
     }
 
     #codeeditor {
       /*left:0px;*/
+      width:720px;
+      height:600px;
     }
 
     .toolsPlaceholder {
@@ -89,7 +104,7 @@
       z-index: 1;
     }
 
-    svg {
+    #svg {
       width: 100%;
       height: 100%;
       position: absolute;
@@ -101,11 +116,11 @@
       pointer-events: none;
     }
 
-    svg .param {
-      stroke: #ffff00;
+    #svg .param {
+      stroke: #996622;
     }
 
-    svg .highlighted {
+    #svg .highlighted {
       stroke: #74E8CD;
     }
 
@@ -171,7 +186,7 @@
       font-size: 11px;
       margin: 2px 0 0 3px;
       display: inline-block;
-      font-weight: bold;
+      font-weight: 350;
     }
 
     .data-preview .table {
@@ -195,31 +210,30 @@
       position: absolute;
       /*margin: 30px 20px;
       margin-left: 60px;*/
-      min-height: 80px;
       background-color: white;
-      overflow: hide;
-      min-width: 100px;
-      min-height: 40px;
-
+      min-width: 50px;
+      min-height: 50px;
+      padding:40px 20px 20px 20px;
       /* This makes things *much* easier?!?! */
       box-sizing: border-box;
+      /*overflow-y: hidden;*/
     }
 
    .wrapper .resize {
       position: absolute;
-      right: -5px;
-      bottom: -5px;
+      right: 0px;
+      bottom: 0px;
       width: 5px;
       height: 5px;
       border-bottom: 1px  solid #aaa;
       border-right: 1px  solid #aaa;
       cursor: se-resize;
      
-    }  
+    }
 
     .connectors-in {
       position: absolute;
-      left: -12px;
+      left: -10px;
       top: 0px;
     }
 
@@ -231,24 +245,27 @@
 
    .connectors-params {
       position: absolute;
-      right: 50%;
-      top: -5px;
+      left: -10px;
+      bottom: 0;
     }
 
     .wrapper li {
       list-style: none;
-      position: relative;
+      position:absolute;
+      /*position: relative;*/
       font-size: 9px;
       margin: 2px auto;
     }
 
     .wrapper label{
       position: absolute;
-      top: -25px;
+      /*top: -25px;*/
+      top:0px;
       left: -2px;
       padding: 5px;
       font-size: 14px;
-      overflow: visible;
+      overflow: hidden !important;
+      width:98%;
       cursor: move;
     }
 
@@ -281,15 +298,49 @@
       padding: 0;
     }
 
+    .inputMarkerSVG {
+      width: 12px; 
+      height: 12px; 
+      fill:#34332F;
+      /*z-index:0;*/
+/*      box-sizing: border-box; */
+      /*border: 1px solid #74E8CD;*/
+      /*display: none;*/
+      border-radius: 50%;
+      margin:auto;
+      padding:10%;
+      top: 0px;
+      position: absolute;
+      /*pointer-events:none;*/
+    }
+
+    .inputMarkerSVG:hover {
+      /*display:none;*/
+      fill:#CCCC66 ;
+      border: 2px solid #74E8CD;
+
+    }
 
     .inputMarker {
-        width: 0px; 
-        height: 0px; 
-        border-top: 10px solid;
-        /*border-bottom: 15px solid transparent;*/
-        border-left: 8px solid #34332F;
-        border-radius: 5px;
-        box-sizing: border-box;
+      width: 2px; 
+      height: 2px; 
+      fill:#34332F;
+      /*z-index:0;*/
+/*      box-sizing: border-box; */
+      border: 1px solid #74E8CD;
+      /*display: none;*/
+      /*border-radius: 50%;*/
+      top: 0px;
+      position: absolute;
+      z-index:101;
+
+      /*left: -5px;*/
+    }
+
+    .inputMarker:hover {
+      /*border-left: 20px solid #fff000;*/
+      fill:#88EE00;
+      border: 2px solid #74E8CD;
     }
 
     .in-arrow .highlighted {
@@ -309,66 +360,84 @@
     }
 
     .in-arrow .highlighted .delete  {
-        display: block;
+      display: block;
     }
 
-    .connectors-in .drop-zone {
-      width: 20px;
-      height: 20px;
-      border: 1px solid #74E8CD;
-      display: none;
-      border-radius: 50%;
-      top: -5px;
-      position: absolute;
-      left: -7px;
-      pointer-events: none;
-      vertical-align: middle;
-      color: #555;
+    .drop-zone {
+      /*display: inline-block !important;*/
+        width: 20px;
+        height: 20px;
+        border: 1px solid #74E8CD;
+        display: none;
+        border-radius: 50%;
+        padding:5px;
+        top: -5px;
+        position: absolute;
+        left: -7px;
+        pointer-events: none;
+        vertical-align: middle;
+        color: #555;
 
     }
 
     .drag-over .drop-zone  {
       display: inline-block !important;
-        
+      font-size:11px !important;
+      font-weight:100;
+
+      background-color:#eed !important;
+      color:#34332F;
+      /*text-align: left;*/
+      width:auto;
+      height:auto;
+      padding-left:10px;
+      padding-right:10px;
+      margin-right:-40px;
+      margin-top:-14px;
+      z-index:100;
     }
 
-    .connectors-params .drop-zone {
-      width: 20px;
-      height: 20px;
-      border: 1px solid #74E8CD;
-      display: none;
-      border-radius: 50%;
+    .paramMarker {
+      width: 20px; 
+      height: 20px; 
+      /*z-index:101;*/
+      display:none;
       top: -5px;
       position: absolute;
       left: -7px;
-      pointer-events: none;
-      vertical-align: middle;
-      color: #555;
     }
 
+    .paramMaker:hover {
+      fill:#CCCC66 ;
+    }
 
-    .paramMarker {
-      width: 0px;
-      height: 0px;
-      left: 11px;
-      border-top: 7px solid transparent;
-      border-bottom: 8px solid transparent;
-      border-left: 10px solid #6E6E6E;
-      box-sizing: border-box;
-      border-radius: 50px;
-      -moz-transform:rotate(90deg);
-      -webkit-transform:rotate(90deg);
-      -o-transform:rotate(90deg);
-      -ms-transform:rotate(90deg);
+    .paramMarkerSVG {
+      width: 20px; 
+      height: 20px; 
+      z-index:101;
+      top: -5px;
+      position: absolute;
+      left: -2px;
+      pointer-events:none;
+      fill:#C0C0C0;
+
+    }
+
+    .paramMarker:hover {
+      fill:#CCCC66 ;
+      /*border-left: 20px solid #fff000;*/
+      /*fill:#6600EE;*/
     }
 
     .param-arrow {
+      /*padding:auto;*/
+      border-radius: 50%;
+      bottom:0px;
       padding:auto;
-      bottom:-10px;
-
     }
+
     .param-arrow .highlighted {
-      border-left: 7px solid #74E8CD;
+      /*border-left: 7px solid #74E8CD;*/
     }
 
     .param-arrow .delete  {
@@ -387,23 +456,29 @@
         display: block;
     }
 
+    .param-arrow:hover {
+      /*background-color: red;*/
+      border: 2px solid #74E8CD;
+
+    }
+
     .outputMarker {
-      width: 0px; 
-      height: 0px; 
-/*        border-top: 15px solid transparent;
-      border-bottom: 15px solid transparent;
-      border-left: 10px solid #34332F;*/
-      border-top: 7px solid transparent;
-      border-bottom: 8px solid transparent;
-      border-left: 20px solid #34332F;
-      border-radius: 500px;
-    }   
+      width: 400%;
+      height: auto;
+      z-index:101;
+    }
+
+    .outputMarker:hover {
+      /*border-left: 20px solid #fff000;*/
+      fill:#CCCC66 ;
+    }
 
     .deleteEl {
 
       width: 20px;
       height: 14px;
-      top: -25px;
+      /*top: -25px;*/
+      top: 0px;
       float: right;
       display: inline-block;
       position: absolute;
@@ -413,26 +488,51 @@
       padding: 5px;
       text-align: center;
       font-size: 9px;
-
-
     }
 
-    .codeTab {
-      width: 20%;
-      height: 20px;
-      top: -14px;
+    .elInfo {
+      width: 20px;
+      height: 14px;
+      /*top: -25px;*/
+      top:0px;
       float: right;
       display: inline-block;
       position: absolute;
-      right: 20%;
+      right: 25px;
+      cursor: pointer;
+      vertical-align: middle;
+      padding: 5px;
+      text-align: center;
+      font-size: 9px;
+    }
+
+    .labelTab {
+      display: inline-block;
+      position: absolute;
+      top:0px;
+    }
+
+    .codeTab {
+      width: 20px;
+      height: 14px;
+      /*top: -25px;*/
+      top:0px;
+      float: right;
+      display: inline-block;
+      position: absolute;
+      /*right: 20%;*/
+      right:52px;
       cursor: pointer;
       vertical-align: middle;
       padding: 5px;
       text-align: center;
       font-size: 9px;
       overflow:hidden;
+    }
 
-    }  
+    #codeDialog {
+      width:800px;
+    }
 
     #destino {
       display: inline;
