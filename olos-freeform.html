@@ -900,18 +900,18 @@
         },
 
         deleteConnection: function(e, details, selection) {
+          var dst;
+          var src;
+
           if (e) {
             e.stopPropagation();
           }
-          var elementInsideId;
 
-          // figure out the source
-          var src;
           if (this.bezier) {
             var splitID = this.bezier.id.split('-');
             src = splitID[0]+'-'+splitID[1]+'-'+splitID[2];
             // console.log(src);
-            elementInsideId = splitID[3] + '-' + splitID[4] + '-' + splitID[5];
+            dst = splitID[3] + '-' + splitID[4] + '-' + splitID[5];
           }
           else {
             var wrapper = null;
@@ -920,19 +920,37 @@
                 wrapper = e.path[i];
               }
             }
-            elementInsideId = wrapper.getAttribute('component-id');
+            dst = wrapper.getAttribute('component-id');
           }
 
           // -- or --
           // delete all connections / reconnect everything
           var srcNode, srcElem;
           for (var i = 0; i < this._connections.length; i++) {
-            // console.log('orig cnx: ' + this._connections[i].target.id, elementInsideId, this._connections[i].source.id, src);
+            // console.log('orig cnx: ' + this._connections[i].target.id, dst, this._connections[i].source.id, src);
 
-            if (this._connections[i].target.id === elementInsideId && this._connections[i].source.id === src) {
+            if (this._connections[i].target.id === dst && this._connections[i].source.id === src) {
               srcNode = this._connections[i].source.field;
               srcElem = this._connections[i].source.element;
-              srcElem[srcNode].disconnect();
+              dstNode = this._connections[i].target.field;
+              dstElem = this._connections[i].target.element;
+
+              // if destination is a script processor, delete it
+              if (dstElem[dstNode] instanceof ScriptProcessorNode) {
+                console.log('deleting script processor node');
+                dstElem[dstNode].disconnect();
+                dstElem[dstNode] = [];
+              } else if (dstElem[dstNode] instanceof Array) {
+              // if destination is an array, make it empty
+                dstElem[dstNode] = [];
+              }
+
+              try {
+                srcElem[srcNode].disconnect();
+              } catch(e) {
+                // if unable to disconnect it is probably just data so no worries
+                console.log('unable to disconnect ' + srcElem[srcNode]);
+              }
               this._connections.splice(i,1);
             }
           }
@@ -1300,10 +1318,24 @@
           
           if(tagsWithSameName){
             num+= tagsWithSameName.length;
-          } 
-          
+          }
+
+          for (var i = 0; i < self._elements.length; i++) {
+            var elem = self._elements[i];
+            if (elem.name == elName) {
+              var elNum = elem.id.split('-').pop();
+              num = Math.max(elNum, num);
+            }
+          }
+
+          num++;
+
+          // var existingIds = self._elements.filter(function(elem){ return elem.name == elName})
+          // console.log('existing ids: ');
+          // console.log(existingIds);
+
           var uniqueId = elName + '-' + num;
-          
+          console.log('unique id' + uniqueId);
           return uniqueId;
       }, 
 
@@ -1321,6 +1353,7 @@
           varName += capString;
         }
 
+        console.log('varname' + varName);
         return varName;
       },
 
@@ -1434,12 +1467,9 @@
         } else if (dst[dstPort] instanceof AudioParam) {
           console.log('audio param connection!');
           src[srcPort].connect(dst[dstPort]);
-        } else if (dst[dstPort] instanceof Array) { // otherwise it is data
-          console.log(dst[dstPort]);
-          console.log('add to destination array');
-          // add to input array
-          dst[dstPort].push(src[srcPort]);
-        } else if (src[srcPort] instanceof AudioNode) {
+        }
+
+        else if (src[srcPort] instanceof AudioNode) {
           try {
             console.log('connect audio param to script processor');
             var scriptProcessor = audioContext.createScriptProcessor();
@@ -1449,6 +1479,13 @@
             console.log(e);
             return false;
           }
+        }
+
+        else if (dst[dstPort] instanceof Array) {
+          console.log(dst[dstPort]);
+          console.log('add to destination array');
+          // add to input array
+          dst[dstPort].push(src[srcPort]);
         }
         else {
           console.log(src[srcPort]);
