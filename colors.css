@@ -102,7 +102,8 @@ z-index: 200;
       /*background: #B6B7C2;*/
       /*background: #6600EE;*/
       /*background:#fff;*/
-      background:#34332F;
+      /*background:#34332F;*/
+      background:rgba(25,255,200,0.12);
       opacity:1;
 }
 .c0 { color: #42569D } /* Main Secondary color (2) */
@@ -110,7 +111,9 @@ z-index: 200;
 .c2 { 
       /*border: 2px solid #516BC9;*/
       border: 2px solid #6600EE;
-      background:#34332F;
+      /*background:#34332F;*/
+      background:rgba(10,10,10,0.00);
+
  }
 
 .c2.selected-element {

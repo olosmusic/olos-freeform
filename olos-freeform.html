@@ -9,10 +9,15 @@
 <link rel="import" href="../olos-component-list/olos-component-list.html">
 <link rel="import" href="../olos-code-editor/olos-code-editor.html">
 
+<link rel="import" href="../olos-piano/olos-piano.html">
+<link rel="import" href="../olos-clock/olos-clock.html">
+
 
 <link rel="import" href="../olos-doc-viewer/olos-doc-viewer.html">
 
 <link rel="import" href="../paper-dialog/paper-dialog.html">
+<link rel="import" href="../core-tooltip/core-tooltip.html">
+<link rel="import" href="../paper-toggle-button/paper-toggle-button.html">
 
 
 <link rel="stylesheet" href="colors.css">
@@ -23,9 +28,9 @@
     <link rel="stylesheet" href="colors.css">
 
     <!-- header -->
-    <core-toolbar class="small">
-
-      <paper-input-decorator label="Enter a name">
+    <core-toolbar class="small" style="background-color:#484A4A;color:floralwhite;">
+      <h1>((( OLoS )))</h1>
+      <paper-input-decorator label="Enter a name to save">
        <input id="filename" is="core-input">
        </paper-input-decorator>
 
@@ -37,41 +42,98 @@
         icon="redo"></paper-icon-button>
  -->
       <paper-icon-button id="save"
-        icon="save"></paper-icon-button>
-      <paper-icon-button id="open"
-        icon="folder"></paper-icon-button>
-      <paper-icon-button id="info"
-        icon="info-outline"></paper-icon-button>
+        icon="save" on-click="{{saveToLocalStorage}}"></paper-icon-button>
 
-      <paper-icon-button id="clear"
-        icon="clear" on-click={{_environmentClear}}></paper-icon-button>
+      <paper-dropdown-menu id="loadDropdown" label="Saved Files">
 
-      <paper-icon-button id="morebutton"
-        icon="more-vert"></paper-icon-button>
+<!--         <paper-icon-button id="open"
+          icon="folder"></paper-icon-button>
+ -->
+        <paper-dropdown class="dropdown" label="Saved Files">
+          <core-menu selected="" id="fileLoader" on-core-select="{{_loadSavedFile}}" class="menu" icon="settings">
+            <template repeat="{{savedFile, index in _examples}}">
+              <paper-item name="{{savedFile}}" label="{{savedFile}}">{{savedFile}}</paper-item>
+            </template>
+          </core-menu>
+        </paper-dropdown>
+      </paper-dropdown-menu>
+
+
+      <!-- <paper-dropdown-menu id="exampleDropdown" label="Examples"> -->
+
+          <!-- <paper-icon-button id="morebutton" icon="more-vert"></paper-icon-button> -->
+
+        <paper-dropdown class="dropdown" >
+          <core-menu selected="" id="exampleLoader" on-core-select="" class="menu">
+            <template repeat="{{savedFile, index in _examples}}">
+              <paper-item label="{{savedFile}}">{{savedFile}}</paper-item>
+            </template>
+          </core-menu>
+        </paper-dropdown>
+      </paper-dropdown-menu>
+
+      <core-tooltip label="Export Code" position="bottom center">
+        <paper-icon-button id="exportCode" icon="language" on-click="{{_saveAsCode}}"></paper-icon-button>
+      </core-tooltip>
+
+      <core-tooltip label="Info/Help" position="bottom center">
+        <paper-icon-button id="info"
+          icon="info-outline"></paper-icon-button>
+      </core-tooltip>
+
+      <core-tooltip label="Clear" position="bottom center">
+        <paper-icon-button id="clear"
+          icon="clear" on-click={{_environmentClear}}></paper-icon-button>
+      </core-tooltip>
+
+      <olos-clock id="clock"></olos-clock>
+      <olos-piano id="piano"></olos-piano>
 
     </core-toolbar>
 
 
-    <core-icon-button id="showDataBtn" class="active" icon="view-module" on-click="{{showDataBtn}}" alt="show component data">
-      <span>show code</span>
+    <core-icon-button id="showGlobalBtn" class="active" icon="sort" on-click="{{showGlobalBtn}}" alt="show component data">
+      <span>global code</span>
     </core-icon-button>
 
+    <!-- code dialog -->
+      <paper-dialog  class="modalDialog" id="codeDialog" sizingtransition="core-transition-center" heading="var {{_selElement.varName}}">
 
-      <paper-dialog id="codeDialog" backdrop transition="core-transition-center" heading="var {{_selElement.varName}}">
-          <label>Current Method: </label>
-          <paper-dropdown-menu id="methodDropdown" label="{{_selectedMethod}}">
-            <paper-dropdown class="dropdown">
-              <core-menu selected="0" id="selector" on-core-select="{{_methodChanged}}" class="menu">
-                <template repeat="{{meth, index in _publicMethods}}">
-                  <paper-item label="{{meth}}">{{meth}}</paper-item>
-                </template>
-              </core-menu>
-            </paper-dropdown>
-          </paper-dropdown-menu>
+          <core-tooltip label="auto-update: {{_autoUpdateCode}}">
+            <paper-toggle-button checked on-change="{{toggleAutoUpdateCode}}"></paper-toggle-button>
+          </core-tooltip>
+
+          <core-tooltip label="opacity">
+            <input is="core-input" id="opacitySlider" committedValue="{{codeOpacity}}" value="{{codeOpacity}}" min="0.2" max="1.0" step="0.01" type="range" style="width:40px"></input>
+          </core-tooltip>
+
+          <div id="dialogWrapper">
+            <label>Current Method: </label>
+            <paper-dropdown-menu id="methodDropdown" label="{{_selectedMethod}}">
+              <paper-dropdown class="dropdown">
+                <core-menu selected="0" id="selector" on-core-select="{{_methodChanged}}" class="menu">
+                  <template repeat="{{meth, index in _publicMethods}}">
+                    <paper-item label="{{meth}}">{{meth}}</paper-item>
+                  </template>
+                </core-menu>
+              </paper-dropdown>
+            </paper-dropdown-menu>
+          <olos-code-editor id="codeeditor" style="width:100%; height:100%"></olos-code-editor>
         </div>
-        <olos-code-editor id="codeeditor"></olos-code-editor>
     </paper-dialog>
 
+    <!-- global dialog -->
+<!--     <paper-dialog class="modalDialog" id="globalDialog" sizingTarget="window" autoCloseDisabled transition="core-transition-center" heading="Global Code">
+
+      <core-tooltip label="opacity">
+        <input is="core-input" committedValue="{{globalCodeOpacity}}" value="{{globalCodeOpacity}}" min="0.3" max="1.0" step="0.01" type="range" style="width:40px"></input>
+      </core-tooltip>
+
+      <olos-code-editor id="globalEditor"></olos-code-editor>
+
+    </paper-dialog> -->
+
+    <!-- info dialog -->
     <paper-dialog id="infoDialog" backdrop transition="core-transition-center" heading="var {{_selElement.varName}}">
       <!-- <olos-doc-viewer flex style=" position:fixed; right:0px; top: 400px; width:350px; height:600px; background-color:#fdffdf" id="docViewer"> -->
 
@@ -129,15 +191,30 @@
             on-click="{{wrapperClicked}}" on-dragStart="{{dragStartWrapper}}" on-drag="{{dragWrapper}}" on-dragend="{{dragEndWrapper}}" draggable="true"><!-- on-drop="{{droppedOnInArrow}}" needed? -->
 
             <div>
-              <label class="{{el.colorClass + '3'}} labelTab" width="100%" style="overflow:hidden;">olos.{{el.varName}}</label>
+                <label class="{{el.colorClass + '3'}} labelTab" width="100%">
+                  <core-tooltip label="Variable Name">
+                    olos.{{el.varName}}
+                  </core-tooltip>
+                </label>
             </div>
 
-            <div class="{{el.colorClass + '4'}} codeTab" height="100%" width="30%" on-click="{{_elCodeButtonClicked}}">&lt &#92; &gt
+            <div class="{{el.colorClass + '4'}} codeTab" height="100%" width="30%" on-click="{{_elCodeButtonClicked}}">
+              <core-tooltip label="Edit Source Code" position="top" class="fancy">
+                &lt &#92; &gt
+              </core-tooltip>
             </div>
 
-            <div  class="elInfo {{el.colorClass + '5'}}" component_id="{{el.element.id}}" on-click="{{_elInfoButtonClicked}}">i</div>
+            <div  class="elInfo {{el.colorClass + '5'}}" component_id="{{el.element.id}}" on-click="{{_elInfoButtonClicked}}">
+              <core-tooltip label="Documentation" position="top">
+                ( i )
+              </core-tooltip>
+            </div>
 
-            <div  class="deleteEl {{el.colorClass + '4'}}" component_id="{{el.element.id}}" on-click="{{_deleteEvent}}">X</div>
+            <div  class="deleteEl {{el.colorClass + '4'}}" component_id="{{el.element.id}}" on-click="{{_deleteEvent}}">
+              <core-tooltip label="Delete" position="top">
+                X
+              </core-tooltip>
+            </div>
 
             <!-- Input -->
             <div class="connectors-in" >
@@ -146,7 +223,10 @@
                     <li class="{{el.element.id}}-{{ins}} arrow in-arrow" on-dragover="{{dragOverInArrow}}" 
                     on-drop="{{droppedOnInArrow}}" on-dragenter="{{dragEnterInArrow}}" on-dragleave="{{dragLeaveInArrow}}" on-mouseenter="{{dragEnterInArrow}}" on-mouseleave="{{dragLeaveInArrow}}" on-click="{{arrowClicked}}">
                       <svg class="inputMarkerSVG" viewBox="-20 0 20 20">
-                        <ellipse cx="-15" cy="10" rx="5" ry="5"></ellipse>
+                        <!-- <ellipse cx="-15" cy="10" rx="5" ry="5"></ellipse> -->
+                        <circle cx="-5" cy="10" r="4" />
+                        <circle cx="-5" cy="10" r="11" stroke="black" stroke-width="4" fill="none" />
+
                       </svg>
                       <div class="delete" on-click="{{deleteConnection}}">x</div>
                     <span class="drop-zone tooltip">{{ins}}
@@ -166,7 +246,8 @@
                   on-drop="{{droppedOnParamArrow}}" on-dragenter="{{dragEnterParamArrow}}" on-dragleave="{{dragLeaveParamArrow}}" on-mouseenter="{{dragEnterParamArrow}}" on-mouseleave="{{dragLeaveParamArrow}}" on-click="{{arrowClicked}}">
                     <!-- <div class="paramMarker"> -->
                       <svg class="paramMarkerSVG" viewBox="-20 0 20 20">
-                      <ellipse cx="-10" cy="10" rx="5" ry="5"></ellipse>
+                        <circle cx="-10" cy="10" r="3" />
+                        <circle cx="-10" cy="10" r="5.5" stroke="black" stroke-width="1" fill="none" />
                       </svg>
                       <div class="delete" on-click="{{deleteConnection}}">x</div>
                       <span class="drop-zone">{{params}}</span>
@@ -185,17 +266,13 @@
                 <div id="{{index}}"  class="{{el.element.id}} arrow out-arrow" 
                   on-drag="{{dragOutArrow}}" on-dragstart="{{dragOutArrowStart}}" on-dragend="{{dragOutArrowEnd}}"  
                    on-click="{{arrowClicked}}" draggable="true" style="z-index:100" >
-                  <!-- <div class="outputMarker" style="z-index:101"></div> -->
-                  <svg class="outputMarker" id="marker" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-                     viewBox="9 0 20 15" enable-background="new 9 0 20 15" xml:space="preserve">
 
-                <path d="M9.6,13.2c0.1-0.3,0.1-0.7,0.3-1c1.4-1.7,1.4-3,0-4.6C9.7,7.4,9.7,7,9.6,6.4C12.5,8.4,12.5,11.5,9.6,13.2z"/>
-                <path d="M10.5,14.1c0.1-0.3,0.1-0.7,0.3-1c1.4-1.7,1.9-3.6,0.6-5.4c-1.6-2.3-1.1-2-1.2-2.6C13.1,7.2,13.4,12.4,10.5,14.1z"/>
-                <path d="M8.9,12c0.2-0.7,0.6-1.4,0.6-2.1c0-0.6-0.4-1.3-0.5-2c1.8,1.1,1.9,2.8,0.2,4.2C9.2,12,9,12,8.9,12z"/>
-                </svg>
-
-
-                <!-- </div> -->
+                    <svg class="outputMarker" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                       viewBox="0 0 20 20">
+                      <circle cx="5" cy="10" r="8" />
+                      <circle cx="5" cy="10" r="10" stroke="black" stroke-width="1.5" fill="none" />
+                      </svg>
+                      <!-- <core-icon id="marker" icon="radio-button-on"></core-icon> -->
               </template>
             </div>
 
@@ -214,7 +291,19 @@
 
   <script type="text/javascript" src="../p5js/lib/p5.js"></script>
   <script type="text/javascript" src="../p5js/lib/addons/p5.sound.js"></script>
-  <script src="../Tone/Tone.js"type="text/javascript"></script>
+  <script type="text/javascript" src="../Tone/build/Tone.js" defer></script>
+  <script type="text/javascript" src="../lodash.js/lodash.min.js"></script>
+
+  <script type="text/javascript" src="../nexusUI/dist/nexusUI.js"></script>
+
+  <!-- sockets -->
+  <script type="text/javascript" src="../socket.io-client/socket.io.js"></script>
+
+  <script>
+    var socket = io.connect('localhost:8080/');
+  </script>
+
+
 
   <script>
 
@@ -239,6 +328,18 @@
       audioContext = new AudioContext();
     }
 
+    // nx.colorize('fill', '#C0C0C0');
+    nx.colorize('fill', 'rgb(110, 103, 100)');
+    // nx.colorize('fill', 'rgb(155, 155, 155)');
+    nx.colorize('accent', '#00FFFF');
+    nx.colorize('border', '#CEDE99');
+    // nx.colorize('border', 'rgb(255, 220, 157)');
+    // nx.colorize('border', '#9370DB');
+    // nx.colorize('border', 'palegoldenrod');
+
+
+    nx.colorize('accentborder', '#fff000');
+
     var _dragObj = {};
 
     Polymer({
@@ -249,19 +350,36 @@
       _connections: [],
 
       _selElement: undefined,
+      _highlightedConnection: null,
       _selectedMethod: null,
       _publicMethods: null,
 
+      // this item has public methods
+      publicMethods: ['globalCode', 'globalScale', 'globalClock'],
+      
+      // debounce update, in seconds
+      _codeUpdateFrequency: 2,
+      _lastCodeUpdate: 0,
+      _autoUpdateCode: true,
+
       _snapX: 10,
       _snapY: 10,
-      _showDataTable: false,
+      _showGlobalCode: false,
 
       // store all of the methods that have been overwritten
       // id: methodName: code
       _customMethods: {},
 
+      _examples: [],
+
       // color scheme
       _colors: ['a', 'b', 'c', 'd'],
+
+      codeOpacity: 0.9,
+      // globalCodeOpacity: 0.7,
+
+      clock: null,
+      piano: null,
 
       domReady: function() {
 
@@ -269,8 +387,21 @@
             this._drawConnections();
           });
 
-          var obj = ['olos-destination', '-1'];
-          this.addNewElToConnector(obj, 0, 0);
+          this.addNewElToConnector('olos-destination', '-1', 0, 0);
+
+          // set initial modal opacity
+          this.codeOpacityChanged();
+
+          this.id = 'olos';
+          this.varName = 'olos';
+          // init custom methods object for the environment
+          this._initCustomMethodsObj(this);
+
+          this.clock = this.$.clock;
+          this.piano = this.$.piano;
+
+          this._examples = Object.keys(window.localStorage);
+
       },
 
       ready: function() {
@@ -280,12 +411,21 @@
         // assign olos variable to window
         window.olos = this;
 
+        // start animation loop
+        this.animate();
       },
 
-      addNewElToConnector: function(newEl, left, top){
+      // helpful?
+      reFresh: function() {
+        this._elements = [];
+        this._connections = [];
+        this._selElement = undefined;
+        this._highlightedConnection = null;
+        this._selectedMethod = null;
+        this._publicMethods =  null;
+      },
 
-        var newElName = newEl[0];
-        var newElCategoryIndex = newEl[1];
+      addNewElToConnector: function(newElName, newElCategoryIndex, left, top){
 
         var newEl = document.createElement(newElName);
         newEl.name = newElName;
@@ -299,18 +439,16 @@
 
 
           if (newElName.indexOf('destination') > -1){
-            console.log('destino!');
             this.$.destino.appendChild(newEl);
           } else {
             this.appendChild(newEl);
           }
 
-          this._processNewElement(newEl, top, left, newElCategoryIndex);
+          return this._processNewElement(newEl, top, left, newElCategoryIndex);
 
         }.bind(this));
 
-
-      }, 
+      },
 
       _processNewElement: function(newEl, top, left, newElCategoryIndex) {
         var self = this;
@@ -323,6 +461,7 @@
         newEl.className = cat;
         newEl.style.width = '100%';
         newEl.style.height = '100%';
+
         var elItem = {  element: newEl, 
                                       id: newEl.id,
                                       name: newEl.tagName.toLowerCase(), 
@@ -330,17 +469,17 @@
                                       left: left,
                                       category: cat,
                                       colorClass: colorClass,
-                                      varName: newEl.varName
+                                      varName: newEl.varName,
+                                      publicMethods: newEl.publicMethods
                                   };
-
 
         var info = this.$.component_list.getComponentInfo(newEl.tagName.toLowerCase());
 
-        // if(info.resizable || info.category==='visualize') {
         if (elItem.name.indexOf('destination') > -1) {
-          console.log(elItem.name);
           elItem.resizable = false;
           setTimeout(function() {
+
+            // TO DO: only one destination
             self.destinations.push(elItem);
           }, 200);
         } else {
@@ -349,12 +488,7 @@
 
         self._addElementVar(elItem)
 
-
-        // TO DO: make objects public
-
-        this._initCustomMethodsObj(elItem);
-
-        // trigger drag event
+        self._initCustomMethodsObj(elItem);
 
       },
 
@@ -426,10 +560,8 @@
           var src = badConnections[i].source.element[badConnections[i].source.field];
           if (src instanceof AudioNode) {
             this._deleteAudioConnection(badConnections[i]);
-            console.log(src);
-            console.log('..is audio node');
           } else {
-            console.log('removed connection ' + src + ' is not audio!!');
+            // console.log('removed connection ' + src + ' is not audio!!');
           }
         }
 
@@ -487,7 +619,7 @@
 
           // dataSeg[0] is component name, dataSeg[1] is categoryIndex
           if(dataSeg.length==2) {
-            self.addNewElToConnector(dataSeg, Math.round(e.offsetX/10)*10, Math.round(e.offsetY/10)*10);
+            self.addNewElToConnector(dataSeg[0], dataSeg[1], Math.round(e.offsetX/10)*10, Math.round(e.offsetY/10)*10);
 
             return;
           } 
@@ -565,11 +697,8 @@
 
 
         dragStartWrapper: function(e, details, selection) {
-          console.log('Drag start wrapper: ');
-          console.log(e);
 
           var target = e.target;
-          console.log('target: ' + target);
 
           target.setAttribute('start-x', e.x);
           target.setAttribute('start-y', e.y);
@@ -612,13 +741,6 @@
 
           try {
             var target = e.target; // || selection; //e.target || e.path[0];
-
-            // for(var i = 0; i< e.path.length && !target; i++) {
-            //   if(e.path[i].classList.contains('wrapper')) {
-            //     target = e.path[i];
-            //   }
-            // }
-            // console.log(target.name);
 
             var dx = e.x - (target.getAttribute('start-x') || 0),
                 dy = e.y - (target.getAttribute('start-y') || 0);
@@ -691,21 +813,8 @@
           var elementId = wrapperEl.id;
           elementId = elementId.substring(8, elementId.length);
 
-          // remove selected from this._selElement
-          // if (typeof(this._selElement) !== 'undefined' && typeof(this._selElement) !== 'undefined') {
-          //   this._selElement.className.replace
-          //       ( /(?:^|\s)selected(?!\S)/g , '' )
-          // }
-
           // reset this._selElement
           this._selElement = this.findElById(elementId).element;
-
-          // if(this.$.input_table) {
-          //   this.$.input_table.input = this._selElement.input;
-          // }
-          // if(this.$.output_table) {
-          //   this.$.output_table.input = this._selElement.output;
-          // }
         },
 
         // OUT ARROWS
@@ -796,9 +905,6 @@
               source = self.findElById(self.draggedEl.classList[0]),
               target = self.findElById(targetElementId);
 
-          // console.log(source);
-          // console.log(selection);
-
           this._connectAttributes(source, 'output', target, targetField);
 
           self._drawConnections();
@@ -873,7 +979,7 @@
             var bezierCssPath = '#container #svg #'+connection[0].source.id+'-'+connection[0].target.id;
 
             var bezier = this.shadowRoot.querySelector(bezierCssPath);
-            this.bezier = bezier;
+            this._highlightedConnection = bezier;
 
             if(connection[0].highlighted) {
               connection[0].highlighted = false;
@@ -889,7 +995,7 @@
               marker.classList.add('highlighted');
               bezier.classList.add('highlighted');
             }
-            // this.bezier = null;
+            // this._highlightedConnection = null;
           }
         },
 
@@ -907,10 +1013,9 @@
             e.stopPropagation();
           }
 
-          if (this.bezier) {
-            var splitID = this.bezier.id.split('-');
+          if (this._highlightedConnection) {
+            var splitID = this._highlightedConnection.id.split('-');
             src = splitID[0]+'-'+splitID[1]+'-'+splitID[2];
-            // console.log(src);
             dst = splitID[3] + '-' + splitID[4] + '-' + splitID[5];
           }
           else {
@@ -927,7 +1032,6 @@
           // delete all connections / reconnect everything
           var srcNode, srcElem;
           for (var i = 0; i < this._connections.length; i++) {
-            // console.log('orig cnx: ' + this._connections[i].target.id, dst, this._connections[i].source.id, src);
 
             if (this._connections[i].target.id === dst && this._connections[i].source.id === src) {
               srcNode = this._connections[i].source.field;
@@ -971,8 +1075,8 @@
 
           // var marker = e.path[1]; 
           // console.log(marker);
-          this.bezier.classList.remove('highlighted');
-          this.bezier = null;
+          this._highlightedConnection.classList.remove('highlighted');
+          this._highlightedConnection = null;
 
           this._drawConnections();
 
@@ -982,20 +1086,6 @@
 
 
       /********************** Event Handlers End ********************************/
-
-
-        showDataBtn: function() {
-            // this._showDataTable = !this._showDataTable;
-            // this.$.showDataBtn.classList.toggle('active');
-            // [].forEach.call(this.shadowRoot.querySelectorAll('.data-preview'), function(el) {
-            //   el.style.maxHeight = el.style.maxHeight=='0px' ? '100px' : '0px';
-            // });
-        },
-
-
-
-
-
 
 
       /**
@@ -1116,14 +1206,23 @@
        * @return {None}             
        */
       
-      scaffoldFromData: function(elements, connections) {
+      scaffoldFromData: function(elements, connections, customMethods) {
+        var self = this;
 
-        //this._elements = elements;
+        // reset everything
+        // this._environmentClear();
+        this.reFresh();
+
+        // this._elements = elements;
+
+        // TO DO: do not save / re-create Destination
 
          elements.forEach(function(el) {
             var alreadyExist = this.querySelector('#'+el.id);
             if(!alreadyExist) {
+
               var domEl =  document.createElement(el.name);
+
 
               this.$.component_list.checkAndImport(domEl, function() {
 
@@ -1132,21 +1231,24 @@
 
                 domEl.id = el.id;
                 
-                if(el.name==='th-table-data') {
-                  domEl.output = el.output;
-                }
-                else {
-                  Object.keys(domEl.publish).forEach(function(attr) {
+                // Object.keys(domEl.publish).forEach(function(attr) {
+                Object.keys(domEl.publish).forEach(function(attr) {
 
+                  if(attr!=='input' && attr!=='output' && el[attr]) {
+                    domEl[attr] = el[attr]; 
+                  }
 
-                    if(attr!=='input' && attr!=='output' && el[attr]) {
-                      domEl[attr] = el[attr]; 
-                    }
+                });
 
-                  });
-                }
                 this.appendChild(domEl);
-                //this._elements.push(el);
+
+                // will this work? //////////// *********************** \\\\\\\\\\
+                // this._processNewElement(domEl, domEl.top, domEl.left, this._colors.indexOf(domEl.colorClass) );
+                // el.element = domEl;
+               this.setupElement(domEl, el);
+
+              // add global var
+              olos[el.varName] = el;
 
              }.bind(this));
 
@@ -1157,13 +1259,65 @@
          //delay to make sure position of elements are final
          setTimeout(function() {
 
-          this.setConnections(connections);         
+          this.setConnections(connections);
 
-         }.bind(this),500);
+          // clone custom methods
+          var methodKeys = Object.keys(customMethods);
+          methodKeys.forEach(function(key) {
+            self._customMethods[key] = customMethods[key];
 
+            // TO DO: execute the custom methods
+          });
+
+         }.bind(this),1000);
 
         //newConnector._drawConnections()
 
+      },
+
+      // set up an element that has been added to the sketch
+      setupElement: function(domEl, el) {
+        var self = this;
+
+        var elItem = {  element: domEl, 
+                              id: domEl.id,
+                              name: domEl.tagName.toLowerCase(), 
+                              top: el.top,
+                              left: el.left,
+                              category: el.category,
+                              colorClass: el.colorClass,
+                              varName: el.varName,
+                              publicMethods: el.publicMethods
+                          };
+
+        // attributes that were not assigned to domEl b/c they were not published
+        domEl.varName = el.varName; // used by sourcecode element
+        domEl.name = domEl.tagName; // used by docs
+        domEl.publicMethods = el.publicMethods;
+
+
+        // domEl.colorClass = el.colorClass;
+
+
+        var info = this.$.component_list.getComponentInfo(domEl.tagName.toLowerCase());
+
+        if (elItem.name.indexOf('destination') > -1) {
+          elItem.resizable = false;
+          setTimeout(function() {
+
+            // only one destination
+            // var oldDest = self.destinations.pop();
+            // oldDest.dispose();
+
+            self.destinations.push(elItem);
+          }, 200);
+        } else {
+          elItem.resizable = true;
+        }
+
+        self._addElementVar(elItem)
+
+        self._initCustomMethodsObj(elItem);
       },
 
       setConnections: function(connections) {
@@ -1177,55 +1331,64 @@
           if(!connection.target.element) {
             connection.target.element = this.querySelector('#'+connection.target.id);
           }
-          this._connectAttributes(connection.source, 'output', connection.target, 'input');
+          this._connectAttributes(connection.source, 'output', connection.target, connection.target.field || 'input');
         }.bind(this));
 
         this._drawConnections();
-      },      
+      },
 
       dumpStateDataAsString: function() {
         var self = this;
 
         var toDumpEls = _.map(this._elements, function(el) {
           var domObject = el.element;
-          var cloned = _.clone(el);  
+          var cloned = _.clone(el);
           Object.keys(domObject.publish).forEach(function(attr) {
-
             //ignore input attribute and output (except where the component is th-table-data)
-            if(attr==='chartData' || attr==='input' || (attr==='output' && el.name!=='th-table-data')) {
+            if(attr.indexOf('input')===0 || (attr==='output' )) {
               return;
             }
-           
             cloned[attr] = domObject[attr];
-
-
           });
-          return cloned;
 
+          return cloned;
         });
 
-        var retObj = {elements: toDumpEls, connections: this._connections};
+        var retObj = {elements: toDumpEls, connections: this._connections, customMethods: this._customMethods};
 
         var ret = JSON.stringify(retObj, this.removeDomObjects);
-
         //var connectionsJSON = JSON.stringify(this._connections , this.removeDomObjects);
 
-         
-
         return ret;
+      },
 
-      }, 
+      saveToLocalStorage: function() {
+        var sketchData = this.dumpStateDataAsString();
+        var sketchName = this.$.filename.value;
+        localStorage.setItem(sketchName, sketchData);
+      },
 
+      _loadFromLocalStorage: function(sketchName) {
+        var sketchString = localStorage[sketchName];
+        var sketchJSON = JSON.parse(sketchString);
+        this.scaffoldFromData(sketchJSON.elements, sketchJSON.connections, sketchJSON.customMethods);
+      },
+
+      _loadSavedFile: function(e, detail, selection) {
+        var fileName = this.$.fileLoader.selectedItem.getAttribute('label');
+        try {
+          this._loadFromLocalStorage(fileName);
+        } catch(e) {throw 'unable to load ' + fileName}
+      },
 
       removeDomObjects: function(key, value) {
-
 
           if(value instanceof HTMLElement) 
             return undefined;
           else
             return value;
 
-      },              
+      },
 
 
       findElById: function(id){
@@ -1246,7 +1409,7 @@
        * @return {Object}           list of attributes that are input.
        */
       _checkForInputAttr: function(published){
-        console.log(published);
+
         if(!published) {
           return false;
         }
@@ -1254,7 +1417,7 @@
           return item.indexOf("input") > -1;
 
         });
-        console.log(attrs);
+
         return attrs;
       },
      
@@ -1285,7 +1448,7 @@
         var attrs = Object.keys(published).filter(function(item) {
           return item.toLowerCase().indexOf("param") > -1;
         });
-        console.log(attrs);
+
         return attrs;
         // console.log(published.audioParams);
         // return published.audioParams;
@@ -1331,11 +1494,8 @@
           num++;
 
           // var existingIds = self._elements.filter(function(elem){ return elem.name == elName})
-          // console.log('existing ids: ');
-          // console.log(existingIds);
 
           var uniqueId = elName + '-' + num;
-          console.log('unique id' + uniqueId);
           return uniqueId;
       }, 
 
@@ -1353,7 +1513,6 @@
           varName += capString;
         }
 
-        console.log('varname' + varName);
         return varName;
       },
 
@@ -1469,26 +1628,29 @@
           src[srcPort].connect(dst[dstPort]);
         }
 
-        else if (src[srcPort] instanceof AudioNode) {
-          try {
-            console.log('connect audio param to script processor');
-            var scriptProcessor = audioContext.createScriptProcessor();
-            src[srcPort].connect(scriptProcessor);
-            dst[dstPort] = scriptProcessor;
-          } catch(e) {
-            console.log(e);
-            return false;
-          }
-        }
+        // else if (src[srcPort] instanceof AudioNode) {
+          
+        // }
+
+        // TO DO
+        // else if (src[srcPort] instanceof AudioNode && dst[dstPort] instanceof Array) {
+        //   try {
+        //     console.log('connect audio param to script processor');
+        //     var scriptProcessor = audioContext.createScriptProcessor();
+        //     src[srcPort].connect(scriptProcessor);
+        //     dst[dstPort] = scriptProcessor;
+        //   } catch(e) {
+        //     console.log(e);
+        //     return false;
+        //   }
+        // }
 
         else if (dst[dstPort] instanceof Array) {
-          console.log(dst[dstPort]);
-          console.log('add to destination array');
-          // add to input array
+          // add to destination array
           dst[dstPort].push(src[srcPort]);
         }
         else {
-          console.log(src[srcPort]);
+          // ssrc[srcPort]
           console.log('could not make a connection');
           return false;
         }
@@ -1496,18 +1658,28 @@
         return true;
       },
 
-        // called by connectorShape object, this = the instance of that object when it deletes itself.
-      clickedOnConnection: function(e) {
-        // this.bezier = the most recently clicked on connection
-        this.bezier = this.shadowRoot.querySelector('#'+e.toElement.id);
 
-        // if this bezier is already highlighted, delete the connection represented by this bezier
-        if (String(this.bezier.classList).indexOf('highlight') > -1 ) {
-          // console.log('delete');
+      // clickInContainer helps detect if a bezier was clicked
+      clickInContainer: function(e) {
+        var className = e.toElement.className;
+        if ( className.baseVal && className.baseVal.indexOf('cnxn') > -1 ) {
+          this.clickedOnConnection(e);
+        } else {
+          this._clearHighlightedConnections();
+        }
+      },
+
+      // called by connectorShape object, this = the instance of that object when it deletes itself.
+      clickedOnConnection: function(e) {
+        // this._highlightedConnection = the most recently clicked on connection
+        this._highlightedConnection = this.shadowRoot.querySelector('#'+e.toElement.id);
+
+        // if this._highlightedConnection is already highlighted, delete the connection represented by this._highlightedConnection
+        if (String(this._highlightedConnection.classList).indexOf('highlight') > -1 ) {
           this.deleteConnection(e);
         } else {
           // if not highlighted, then highlight
-          this.highlightBezier(this.bezier);
+          this.highlightBezier(this._highlightedConnection);
         }
 
         // var connections = this.destination.inputConnections;
@@ -1515,11 +1687,11 @@
 
       },
 
-      // clickInContainer helps detect if a bezier was clicked
-      clickInContainer: function(e) {
-        var className = e.toElement.className;
-        if ( className.baseVal && className.baseVal.indexOf('cnxn') > -1 ) {
-          this.clickedOnConnection(e);
+
+      _clearHighlightedConnections: function() {
+        if (this._highlightedConnection) {
+          this._highlightedConnection.classList.remove('highlighted');
+          this._highlightedConnection = null;
         }
       },
 
@@ -1542,9 +1714,15 @@
       _showCode: function(el) {
         var self = this;
         var codeEditor = this.$.codeeditor;
+        var publicMethods;
 
         // find this element's public methods
-        var publicMethods = el.publicMethods;
+        try {
+          publicMethods = el.publicMethods;
+        } catch (e) {
+          throw 'unable to show code';
+          return;
+        }
 
         // this._setupMethodDropdown(publicMethods);
 
@@ -1573,7 +1751,6 @@
             // remove indentation so it looks nice
             displayCode.forEach(function(row, index){
               if (row[0] === '\t') {
-                console.log('it is a tab');
                 // remove the tab
                 row = row.substr(1);
               } else if (row[0] === ' ' && row[1] === ' '){
@@ -1593,10 +1770,12 @@
           codeEditor.currentMethod = el['methodName'];
 
           codeEditor.mirror.on('change', function(e) {
+
             self.updateCode(e);
+
           });
 
-          this.updateCode();
+          // this.updateCode();
 
         }
         else {
@@ -1613,6 +1792,7 @@
       },
 
       updateCode: function(x) {
+
         var codeEditor = this.$.codeeditor;
         var methodName = this._selectedMethod;
         var currentMethod = codeEditor.currentMethod;
@@ -1621,9 +1801,15 @@
         // set currentMethod
         var newCode = codeEditor.getValue();
         var elMethod = this._selElement[methodName];
+
         // console.log(this);
         this._selElement[methodName] = Function(newCode).bind(this._selElement);
-        this._selElement[methodName]();
+
+        if (this._autoUpdateCode && (audioContext.currentTime - this._lastCodeUpdate > this._codeUpdateFrequency) ) {
+          this._selElement[methodName]();
+          this._codeUpdateFrequency = audioContext.currentTime;
+        }
+
 
         this._saveCustomMethod(this._selElement, methodName, newCode );
       },
@@ -1644,6 +1830,8 @@
       _setupMethodDropdown: function(el) {
         var publicMethods = el.publicMethods;
         this._publicMethods = publicMethods;
+        console.log('public methodz');
+        console.log(this._publicMethods);
         if (typeof(this._publicMethods) !== 'undefined' && this._publicMethods.length > 0) {
           this._selectedMethod = this._publicMethods[0];
         }
@@ -1673,6 +1861,9 @@
         this._updateDocs(this._selElement);
       },
 
+      /**
+       *  update documentation
+       */
       _updateDocs: function(element) {
         var pathToHTML = '../' + element.name +'/'+ element.name + '.html';
         this.$.docViewer.url = pathToHTML;
@@ -1685,13 +1876,19 @@
           e.stopPropagation();
         }
         this._selectedMethod = detail.item.getAttribute('label');
-        console.log(this._selectedMethod);
         this._showCode(this._selElement);
       },
 
       // called when the tab to view this element's code is clicked
       _elCodeButtonClicked: function(e) {
-        this.$.codeDialog.toggle()
+        var self = this;
+        self.$.codeDialog.toggle();
+
+        // TO DO: figure out why this is necessary
+        setTimeout( function() {
+          self.$.codeeditor.refresh();
+          self._showCode(this._selElement);
+        }, 400);
       },
 
       _elInfoButtonClicked: function(e) {
@@ -1718,7 +1915,7 @@
 
         // make sure it is not a text or input area
         if ( focusedArea.indexOf('text') > -1 || focusedArea.indexOf('input') > -1) {
-          console.log('in a text area');
+          // in a text area, do nothing
           return;
         }
 
@@ -1741,49 +1938,156 @@
         } 
       },
 
+      // SAVE AND LOAD SESSIONS
+      // _environmentSave: function() {
+      //   var olosData = {
+      //     "elements" : this._elements,
+      //     "connections": this._connections
+      //   }
+      //   console.log(olosData);
+      // },
 
-    // SAVE AND LOAD SESSIONS
-    _environmentSave: function() {
-      var olosData = {
-        "elements" : this._elements,
-        "connections": this._connections
-      }
-      console.log(olosData);
-    },
+      // _environmentLoad: function() {
 
-    _environmentLoad: function() {
+      // },
 
-    },
+      _environmentClear: function() {
+        var j;
 
-    _environmentClear: function() {
-      var j;
-
-      if(confirm('Are you sure you want to clear your entire sketch?')) {
-        // dispose of every element
-        for (var j = this._elements.length -1 ; j > 0 ; j--) {
-          if (j === 0) {
-            return
+        if(confirm('Are you sure you want to clear your entire sketch?')) {
+          // dispose of every element
+          for (var j = this._elements.length -1 ; j > 0 ; j--) {
+            if (j === 0) {
+              return
+            }
+            console.log(this._elements[j].id);
+            this._deleteElement(this._elements[j].id);
           }
-          console.log(this._elements[j].id);
-          this._deleteElement(this._elements[j].id);
+
+          // delete any remaining connections
+          for (j = this._connections.length -1 ; j > 0 ; j--) {
+            this._deleteAudioConnection(this._connections[i]);
+          }
+
+          // re-initialize variables:
+          this._selElement = undefined;
+          this._highlightedConnection = undefined;
+          this.connections = [];
+        }
+      },
+
+      _connectionsChanged: function() {
+        console.log('connections changed');
+        this._drawConnections();
+      },
+
+
+      // ===========                  ===================
+      //           |*|  ANIMATION  |*|
+      // via http://stackoverflow.com/a/19772220/2994108
+      animate: function(_fps){
+        var self = this;
+        var fps = _fps || 15;
+        var fpsInterval = 1000/fps;
+        var then = Date.now();
+        var startTime = then;
+        var elapsed;
+        var animationReq;
+
+        self._animationLoop = function(timestamp) {
+          now = Date.now();
+          elapsed = now - then;
+          animationReq = requestAnimationFrame(self._animationLoop);
+
+          if (elapsed > fpsInterval) {
+            then = now - (elapsed % fpsInterval);
+
+            self.clock._draw();
+
+            for (var i = 0; i < self._elements.length; i++) {
+              if (typeof(self._elements[i].element._draw) !== 'undefined') {
+                self._elements[i].element._draw();
+              }
+            }
+          }
         }
 
-        // delete any remaining connections
-        for (j = this._connections.length -1 ; j > 0 ; j--) {
-          this._deleteAudioConnection(this._connections[i]);
+        self.cancelAnimation = function() {
+          window.cancelAnimationFrame(animationReq);
         }
 
-        // re-initialize variables:
-        this._selElement = undefined;
-        this.bezier = undefined;
-        this.connections = [];
+        self._animationLoop(self._startTime);
+      },
+
+
+      // handle global code
+
+      showGlobalBtn: function() {
+        // this.$.globalDialog.toggle();
+        this._selElement = this;
+
+        this._showCode(this);
+        this.$.codeDialog.toggle();
+
+      },
+
+      // public methods
+      globalCode: function() {
+        //hello world!
+      },
+
+      globalScale: function() {
+        this.scale = [0, 2, 4, 5, 7, 9];
+        this.root = "C#"
+      },
+
+      globalClock: function() {
+        //hello world!
+      },
+
+
+      // globalCodeOpacityChanged: function() {
+      //   this.$.globalDialog.style.opacity = this.globalCodeOpacity;
+      //   // this.globalstyle="opacity:{{globalCodeOpacity}}; position:absolute;"
+      // },
+
+      codeOpacityChanged: function() {
+        // this.$.codeDialog.style.opacity = this.codeOpacity;
+        this.$.dialogWrapper.style.opacity = this.codeOpacity;
+        this.$.codeDialog.style.backgroundColor = 'rgba(27,205,200,' + String(1.5 * this.codeOpacity) + ')';
+      },
+
+      // toggle whether code updates automatically, or only when you hit Run
+      toggleAutoUpdateCode: function(e, detail, selection) {
+        this._autoUpdateCode = selection.checked;
+      },
+
+      // export the source code
+      _saveAsCode: function() {
+        var self = this;
+        var filename = self.$.filename.value || 'untitled';
+        var output = [];
+
+        output.push('/** \n *  '+ filename + '\n' + ' *  Created ' + String(new Date()) + '\n' + ' *  View Source: http://olos.cc/213798 \n **/ \n \n');
+
+        loadStrings('output.js', function(str) {
+          for (var i = 0; i < str.length; i++) {
+            output.push( str[i] + '\n' );
+          }
+
+          p5.prototype.writeFile(output, filename, 'js');
+        });
+
+        // var customMethKeys = Object.keys(this._customMethods);
+
+        // output.push('var ac = new AudioContext(); \n');
+        // console.log(output);
+        // for (var i = 0; i < customMethKeys.length; i) {
+        //   output.push( String( customMethKeys[i] ) + ' = ac.createOscillator(); \n' );
+        // }
+
+        // p5.prototype.writeFile(output, 'myThing', 'js');
       }
-    },
-
-    _connectionsChanged: function() {
-      console.log('connections changed');
-      this._drawConnections();
-    }
 
     });
   </script>
