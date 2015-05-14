@@ -27,8 +27,24 @@
     <link rel="stylesheet" href="olos-freeform.css">
     <link rel="stylesheet" href="colors.css">
 
+    <div id="zoomOptions">
+      <core-icon-button id="zoomInBtn" class="" icon="add" on-click="{{zoomIn}}">
+      </core-icon-button>
+      <br/>
+      <input is="core-input" id="zoomRange" type="range" value="{{_zoom}}" min="{{_zoomMin}}" max="{{_zoomMax}}" step="{{_zoomStep}}" style="width:25px" list=zoomsettings>
+      </input>
+      <datalist id="zoomsettings">
+        <option>1</option>
+        <option>0.8</option>
+        <option>0.6</option>
+      </datalist>
+      <br/>
+      <core-icon-button id="zoomOutBtn" icon="remove" on-click="{{zoomOut}}">
+      </core-icon-button>
+    </div>
+
     <!-- header -->
-    <core-toolbar class="small" style="background-color:#484A4A;color:floralwhite;">
+    <core-toolbar id="toolbar" class="small">
       <h1>((( OLoS )))</h1>
       <paper-input-decorator label="Enter a name to save">
        <input id="filename" is="core-input">
@@ -150,17 +166,19 @@
         <div id="destino" width="300" height="30">
           <!-- destination -->
           <template repeat="{{destination in destinations}}">
-            <div class="wrapper" id="wrapper" on-click="{{wrapperClicked}}" draggable="false">
-            <div class="wrapper {{destination.name}} {{destination.colorClass + '2'}}" id="wrapper-{{destination.element.id}}" component-id="{{destination.element.id}}" on-click="{{wrapperClicked}}" style="top: {{destination.top}}px; left: {{destination.left}}px; transform: {{destination.transform}}; width: {{destination.width}}px; height: {{destination.height}}px" on-click="{{wrapperClicked}}" on-dragStart="{{dragStartWrapper}}" on-drag="{{dragWrapper}}" on-dragend="{{dragEndWrapper}}" draggable="true"><!-- on-drop="{{droppedOnInArrow}}" needed? -->
+            <div class="wrapper" id="wrapper" draggable="false">
+            <div class="wrapper {{destination.name}} {{destination.colorClass + '2'}}" id="wrapper-{{destination.element.id}}" component-id="{{destination.element.id}}" on-click="{{wrapperClicked}}" style="top: {{destination.top}}px; left: {{destination.left}}px; transform: {{destination.transform}}; width: {{destination.width}}px; height: {{destination.height}}px" on-click="{{wrapperClicked}}" on-dragStart="{{dragStartWrapper}}" on-drag="{{dragWrapper}}" on-dragend="{{dragEndWrapper}}" draggable="false"><!-- on-drop="{{droppedOnInArrow}}" needed? -->
 
               <!-- Input -->
-              <div class="connectors-in" >
+              <div class="connectors-in">
                 <ul>
                   <template repeat="{{ins in destination.element.publish | _checkForInputAttr}}">
                     <li class="{{destination.element.id}}-{{ins}} arrow in-arrow" on-dragover="{{dragOverInArrow}}" 
                     on-drop="{{droppedOnInArrow}}" on-dragenter="{{dragEnterInArrow}}" on-dragleave="{{dragLeaveInArrow}}" on-mouseenter="{{dragEnterInArrow}}" on-mouseleave="{{dragLeaveInArrow}}" on-click="{{arrowClicked}}">
-                      <svg class="inputMarkerSVG" viewBox="-20 0 20 20">
-                        <ellipse cx="-15" cy="10" rx="5" ry="5"></ellipse>
+                      <svg class="inputMarkerSVG" style="opacity:0.5; top:-50px; left:-40px;border-top: 80px solid #ffff00;
+                      border-bottom: 80px solid #ffff00;
+                      border-left: 100px solid #ffff00; pointer-events:all; z-index:105" viewBox="0 0 0 0">
+                        <ellipse cx="-100" cy="0" rx="50" ry="50"></ellipse>
                         <div class="delete" on-click="{{deleteConnection}}">x</div>
                       </svg>
                     <span class="drop-zone tooltip">{{ins}}
@@ -175,7 +193,7 @@
       </div> <!-- end dest bar -->
 
 
-    <div id="container" on-mousedown="{{clickInContainer}}" on-drop="{{droppedInContainer}}" on-dragover="{{draggedOverContainer}}">
+    <div id="container" on-mousedown="{{clickInContainer}}" on-drop="{{droppedInContainer}}" on-dragover="{{draggedOverContainer}}" on-mouseup="{{dragEndSVG}}" on-mousemove="{{dragSVG}}">
 
       <svg id="svg"></svg>
 
@@ -269,8 +287,8 @@
 
                     <svg class="outputMarker" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
                        viewBox="0 0 20 20">
-                      <circle cx="5" cy="10" r="8" />
-                      <circle cx="5" cy="10" r="10" stroke="black" stroke-width="1.5" fill="none" />
+                      <circle cx="8" cy="10" r="8" />
+                      <circle cx="6" cy="10" r="10" stroke="black" stroke-width="1.5" fill="none" />
                       </svg>
                       <!-- <core-icon id="marker" icon="radio-button-on"></core-icon> -->
               </template>
@@ -366,6 +384,11 @@
       _snapY: 10,
       _showGlobalCode: false,
 
+      _zoom: 1,
+      _zoomMax: 1,
+      _zoomMin: 0.4,
+      _zoomStep: 0.2,
+
       // store all of the methods that have been overwritten
       // id: methodName: code
       _customMethods: {},
@@ -382,25 +405,32 @@
       piano: null,
 
       domReady: function() {
+        var self = this;
 
-          this.addEventListener('core-resize', function() {
-            this._drawConnections();
-          });
+        this.addEventListener('core-resize', function() {
+          this._drawConnections();
+        });
 
-          this.addNewElToConnector('olos-destination', '-1', 0, 0);
+        this.addNewElToConnector('olos-destination', '-1', 0, 0);
 
-          // set initial modal opacity
-          this.codeOpacityChanged();
+        // set initial modal opacity
+        this.codeOpacityChanged();
 
-          this.id = 'olos';
-          this.varName = 'olos';
-          // init custom methods object for the environment
-          this._initCustomMethodsObj(this);
+        this.id = 'olos';
+        this.varName = 'olos';
+        // init custom methods object for the environment
+        this._initCustomMethodsObj(this);
 
-          this.clock = this.$.clock;
-          this.piano = this.$.piano;
+        this.clock = this.$.clock;
+        this.piano = this.$.piano;
 
-          this._examples = Object.keys(window.localStorage);
+        this._examples = Object.keys(window.localStorage);
+
+        this.$.zoomRange.value = this._zoom;
+
+        window.addEventListener('scroll', function() {
+          self._scrollHandler();
+        });
 
       },
 
@@ -444,7 +474,7 @@
             this.appendChild(newEl);
           }
 
-          return this._processNewElement(newEl, top, left, newElCategoryIndex);
+          return this._processNewElement(newEl, top/this._zoom, left/this._zoom, newElCategoryIndex);
 
         }.bind(this));
 
@@ -619,7 +649,7 @@
 
           // dataSeg[0] is component name, dataSeg[1] is categoryIndex
           if(dataSeg.length==2) {
-            self.addNewElToConnector(dataSeg[0], dataSeg[1], Math.round(e.offsetX/10)*10, Math.round(e.offsetY/10)*10);
+            self.addNewElToConnector(dataSeg[0], dataSeg[1], Math.round(e.offsetX/10)*10 * self._zoom, Math.round(e.offsetY/10)*10 * self._zoom);
 
             return;
           } 
@@ -648,8 +678,8 @@
               wrapperLeft = parseInt(wrapper.getBoundingClientRect().left);
           
 
-          var w =  e.x - wrapperLeft,
-              h = e.y - wrapperTop;
+          var w =  e.x/this._zoom - wrapperLeft,
+              h = e.y/this._zoom - wrapperTop;
 
 
           // wrapper.style.width = w +'px';
@@ -742,8 +772,8 @@
           try {
             var target = e.target; // || selection; //e.target || e.path[0];
 
-            var dx = e.x - (target.getAttribute('start-x') || 0),
-                dy = e.y - (target.getAttribute('start-y') || 0);
+            var dx = e.x/this._zoom - (target.getAttribute('start-x')/this._zoom || 0),
+                dy = e.y/this._zoom - (target.getAttribute('start-y')/this._zoom || 0);
 
 
                 // keep the dragged position in the data-x/data-y attributes, add snap residue from previous drag
@@ -817,6 +847,141 @@
           this._selElement = this.findElById(elementId).element;
         },
 
+        // SVG drag events, also called on mousedown
+        dragStartSVG: function(e, details, selection) {
+          this._makeDragArea = true;
+          this._selectingElByDrag = false;
+
+          this._dragArea = this._createDragArea(e, details, selection);
+
+          this.$.svg.insertBefore(this._dragArea, this.$.svg.firstChild);
+        },
+
+        // called when makeDragArea is true
+        dragSVG: function(e, details, selection) {
+          if (this._makeDragArea) {
+            this._updateDragArea(e, this._dragArea);
+          }
+        },
+
+        // also called on mouseup
+        dragEndSVG: function(e, details, selection) {
+
+          if (!this._dragArea) {
+            return;
+          }
+
+          // remember the old sel el
+          var oldSelElement = this._selElement;
+
+          // dimension of the rectangle:
+          var dragRect = this._dragArea.getBoundingClientRect();
+
+          // find any elements that intersect with the drag area, sort out which are _selElement and _selWrappers
+          for (var i in this._elements) {
+            var el = this._elements[i];
+
+            var wrapperEl = this.shadowRoot.querySelector('#wrapper-' + el.id);
+
+            // get element dimensions
+            var elRect = wrapperEl.getBoundingClientRect();
+
+            // compare and if there is overlap, add class
+            var overlap = this._boundingRectOverlap(elRect, dragRect);
+
+            if (overlap) {
+              // select elements that overlap
+              if (this._selWrappers.indexOf(wrapperEl) < 0) {
+                this._selWrappers.push(wrapperEl);
+              }
+              wrapperEl.classList.add('selected-element');
+
+              // remember selected element if it overlaps
+              if (el.element === oldSelElement) {
+                this._selElement = el.element;
+              }
+            }
+            else {
+              // otherwise remove selection
+              if ( wrapperEl.classList.contains('selected-element') ){
+                wrapperEl.classList.remove('selected-element');
+              } if (this._selElement === el.element) {
+                this._selElement = null;
+              }
+            }
+
+          }
+
+          this._makeDragArea = false;
+          this._clearDragArea(this._dragArea);
+          this._dragArea = null;
+
+        },
+
+        // helper method
+        _boundingRectOverlap: function(rect1, rect2) {
+          var overlap = !(rect1.right < rect2.left || 
+                          rect1.left > rect2.right || 
+                          rect1.bottom < rect2.top || 
+                          rect1.top > rect2.bottom)
+          return overlap;
+        },
+
+        // handle selecting elements by their wrapper during drag
+        dragOverWrapper: function(e, details, selection) {
+          // if (this._makeDragArea) {
+          //   if (!this._selectingElByDrag) {
+          //     this._selectingElByDrag = true;
+          //   }
+
+          //   console.log('drag over: ' + e.target.id);
+          // }
+        },
+
+        // create a rectangle to show drag area
+        _createDragArea: function(e) {
+          var x = e.x / this._zoom, y = e.y / this._zoom;
+          var svgns = "http://www.w3.org/2000/svg";
+          var rect = document.createElementNS(svgns, 'rect');
+          rect.setAttributeNS(null, 'opacity', 0.2);
+          rect.setAttributeNS(null, 'x', x);
+          rect.setAttributeNS(null, 'y', y);
+          rect.setAttributeNS(null, 'width', '0');
+          rect.setAttributeNS(null, 'height', '0');
+          rect.setAttributeNS(null, 'fill', '#D1D1D1');
+          rect.startX = x;
+          rect.startY = y;
+          return rect;
+        },
+
+        // update drag rectangle
+        _updateDragArea: function(e, rect) {
+          var svgns = "http://www.w3.org/2000/svg";
+          var startX = rect.startX;
+          var startY = rect.startY;
+          var deltaX = e.x/this._zoom - startX;
+          var deltaY = e.y/this._zoom - startY;
+
+          if (deltaX < 0) {
+            rect.setAttributeNS(null, 'x', startX + deltaX);
+            deltaX = Math.abs(deltaX);
+          }
+
+          if (deltaY < 0) {
+            rect.setAttributeNS(null, 'y', startY + deltaY);
+            deltaY = Math.abs(deltaY);
+          }
+
+          rect.setAttributeNS(null, 'width', deltaX);
+          rect.setAttributeNS(null, 'height', deltaY);
+        },
+
+        _clearDragArea: function(rect) {
+          //this.$.svg.innerHTML = '';
+          this.$.svg.removeChild(rect);
+        },
+
+
         // OUT ARROWS
         dragOutArrowStart: function(e, details, selection) {
 
@@ -833,8 +998,8 @@
           }
 
 
-          this.startPointX = e.x - this.svgLeft;
-          this.startPointY = e.y - this.svgTop;
+          this.startPointX = e.x/this._zoom - this.svgLeft;
+          this.startPointY = e.y/this._zoom - this.svgTop;
 
           // create temp bezier
           this._addBezierPath( this.startPointX , this.startPointY , this.startPointX , this.startPointY , 70, 'temp_path');
@@ -848,7 +1013,7 @@
           if(e.x!==0 ||  e.y!==0)
           {
 
-            var newPath = this._createBezierPath( this.startPointX, this.startPointY , e.x - this.svgLeft  , e.y - this.svgTop  , 70);
+            var newPath = this._createBezierPath( this.startPointX, this.startPointY , e.x/this._zoom - this.svgLeft  , e.y/this._zoom - this.svgTop  , 70);
             tempPath.setAttribute('d',newPath);
           }               
 
@@ -1082,6 +1247,10 @@
 
         },
 
+        _scrollHandler: function(e) {
+          console.log('scrolling');
+          this._drawConnections();
+        },
 
 
 
@@ -1099,7 +1268,6 @@
        * @return {None}             
        */
       _connectAttributes: function(source, sourceField, target, targetField) {
-
         var self = this;
 
         //find the index of connection which has the same target
@@ -1119,15 +1287,6 @@
           console.log('You cannot make a connection within the same element');
           return false;
         } else { 
-
-          // make the connection in the elements array
-          //target.inputConnectedTo = source;  // not needed
-            
-          var observer = new PathObserver(source.element, sourceField);  
-            
-          observer.open(function(newValue, oldValue) {
-             target.element[targetField] = newValue;
-          });
 
           var srcClone = {id: source.id, name: source.name, element: source.element};
           var targetClone = {id: target.id, name: target.name, element: target.element};
@@ -1169,24 +1328,25 @@
           // isAudioParam determines offset of the connection target
           var isAudioParam = conn.target.field.indexOf('Param') > -1 ? true : false;
 
+          // no zoom if connected to destination
+          var isDestino = conn.target.name.indexOf('destination') >= 0;
+          var end_zoom = isDestino ? self._zoom : self._zoom;
+
           var srcWrapper = self.shadowRoot.querySelector('#wrapper-'+srcEl.id);
           var targetWrapper = self.shadowRoot.querySelector('#wrapper-'+targetEl.id);
-
-          // var srcRect = srcEl.getBoundingClientRect();
-          // var targetRect = targetEl.getBoundingClientRect();
 
           var srcRect = srcWrapper.getBoundingClientRect();
           var targetRect = targetWrapper.getBoundingClientRect();
 
           var svgRect = self.$.svg.getBoundingClientRect();
 
-          //
+          // param offset... TO DO find a better place for this
           var paramOffset = (conn.target.field.indexOf('Param') > -1) ? [0, targetRect.height - 25] : [0,0];
 
-          var startX = srcRect.right - svgRect.left + arrowOffsetX; //srcRect.left + srcRect.width + 30 - containerOffsetX;
-          var startY = srcRect.top - svgRect.top + arrowOffsetY;
-          var endX = targetRect.left  - svgRect.left - arrowOffsetX + paramOffset[0];
-          var endY = targetRect.top  - svgRect.top + arrowOffsetY + paramOffset[1];
+          var startX = (srcRect.right - svgRect.left + arrowOffsetX)/self._zoom; //srcRect.left + srcRect.width + 30 - containerOffsetX;
+          var startY = (srcRect.top - svgRect.top + arrowOffsetY)/self._zoom;
+          var endX = (targetRect.left  - svgRect.left - arrowOffsetX + paramOffset[0])/end_zoom;
+          var endY = (targetRect.top  - svgRect.top + arrowOffsetY + paramOffset[1])/end_zoom;
 
 
           self._addBezierPath(startX, startY, endX, endY , bezierCurveX, srcEl.id + '-' + targetEl.id, conn.highlighted, isAudioParam);
@@ -1577,6 +1737,49 @@
 
       },
 
+
+      // zoom either to a specified amount, or add this._zoomStep
+      zoomIn: function(amt) {
+        if (typeof(amt) === 'number') {
+          this._zoom = amt <= this._zoomMax ? amt : this._zoomMax;
+          return;
+        }
+
+        if (this._zoom + this._zoomStep <= this._zoomMax) {
+          this._zoom += this._zoomStep;
+        } else { throw 'already zoomed max'; }
+
+      },
+
+      // zoom either to a specified amount, or subtract this._zoomStep
+      zoomOut: function(amt) {
+        if (typeof(amt) === 'number') {
+          this._zoom = amt >= this._zoomMin ? amt : this._zoomMin;
+          return;
+        }
+
+        if (this._zoom - this._zoomStep >= this._zoomMin) {
+         this._zoom -= this._zoomStep;
+
+        } else { throw 'already zoomed min'; }
+
+      },
+
+      _zoomChanged: function() {
+        var self = this;
+        self.$.container.style.transform = "scale(" + self._zoom +", " + self._zoom+")";
+
+        var id = setInterval(function() {
+          self._drawConnections();
+        }, 50);
+
+        setTimeout(function() {
+          window.clearInterval(id);
+        }, 600);
+
+      },
+
+
       //// olos environment
 
       makeConnection: function(src, srcPort, dst, dstPort, svgPath) {
@@ -1628,26 +1831,11 @@
           src[srcPort].connect(dst[dstPort]);
         }
 
-        // else if (src[srcPort] instanceof AudioNode) {
-          
-        // }
-
-        // TO DO
-        // else if (src[srcPort] instanceof AudioNode && dst[dstPort] instanceof Array) {
-        //   try {
-        //     console.log('connect audio param to script processor');
-        //     var scriptProcessor = audioContext.createScriptProcessor();
-        //     src[srcPort].connect(scriptProcessor);
-        //     dst[dstPort] = scriptProcessor;
-        //   } catch(e) {
-        //     console.log(e);
-        //     return false;
-        //   }
-        // }
 
         else if (dst[dstPort] instanceof Array) {
+          console.log('this option0');
           // add to destination array
-          dst[dstPort].push(src[srcPort]);
+          // dst[dstPort].push(src[srcPort]);
         }
         else {
           // ssrc[srcPort]
@@ -1666,6 +1854,11 @@
           this.clickedOnConnection(e);
         } else {
           this._clearHighlightedConnections();
+        }
+
+        // start drag
+        if (e.target.id === 'container') {
+          this.dragStartSVG(e);
         }
       },
 
@@ -1931,6 +2124,16 @@
               self._deleteElement(self._selElement.id);
             }
             break;
+
+          // zoom with -_ (189) and += (187)
+          case(189):
+            self.zoomOut();
+            break;
+
+          case(187):
+            self.zoomIn();
+            break;
+
           case(18):
             console.log('option key');
           default:

@@ -134,12 +134,14 @@ z-index: 200;
 
 
 .filter {
-      background: #F7FFF2;
+      background: rgba(247, 255, 247, 0.02);
 }
 .d0 { color: #68AF68 }  /* Main Complement color */
 .d1 { color: #60FF60 }
 .d2 { border: 2px solid #63DE63;
-      background: #F7FFF2;
+      /*background: #F7FFF2;*/
+      background: rgba(247, 255, 247, 0.02);
+
  }
 .d2.selected-element {
 border: 5px solid #63DE63 !important;

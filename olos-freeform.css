@@ -69,6 +69,14 @@
       z-index: 100;
     }
 
+    #toolbar{
+      background-color:#484A4A;
+      color:floralwhite;
+      position:fixed;
+      z-index:10;
+      width:100%;
+    }
+
     #component_list {
       display:block;
       position: fixed;
@@ -103,10 +111,14 @@
 
     #container {
       position: relative;
-      width: 100%;
-      height: 100%;
+      width: 400%;
+      height: 400%;
+      overflow:scroll;
       background: url(grid.png) 0 0 repeat;
       z-index: 1;
+      transform-origin: 0% 0%;
+      transform:scale(1, 1);
+      transition: all .6s ease;
     }
 
     #svg {
@@ -129,12 +141,39 @@
       stroke: #74E8CD;
     }
 
-
-
     .cnxn {
       pointer-events: visibleStroke;
       z-index:101;
     }
+
+    #zoomOptions {
+      position: fixed;
+      top: 116px;
+      left: 10px;
+      z-index: 300;
+      background-color: #DDD;
+      opacity:0.5;
+      border: 1px solid #EEE;
+      /*padding:0px;*/
+      padding: 2px;
+      margin: 0 !important;
+    }
+
+    #zoomRange {
+      -webkit-appearance: slider-vertical;
+      height:80px;
+    }
+
+    #zoomInBtn{
+      padding: 0px;
+      margin: 0px;
+    }
+
+    #zoomOutBtn{
+      padding: 0px;
+      margin: 0px;
+    }
+
 
     #showGlobalBtn {
       position: fixed;
@@ -303,19 +342,26 @@
     }
 
     .inputMarkerSVG {
-      width: 12px; 
+/*      width: 12px; 
       height: 12px; 
       fill:#34332F;
-      /*z-index:0;*/
-/*      box-sizing: border-box; */
-      /*border: 1px solid #74E8CD;*/
-      /*display: none;*/
       border-radius: 50%;
       margin:auto;
       padding:10%;
       top: 0px;
       position: absolute;
-      /*pointer-events:none;*/
+*/
+    width:12px;
+    height:12px;
+    padding:10%;
+    top:5px;
+    position:absolute;
+/*    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+
+    border-left: 7px solid #555;
+*/    box-sizing: border-box;
+
     }
 
     .inputMarkerSVG:hover {
@@ -326,18 +372,19 @@
     }
 
     .inputMarker {
-      width: 2px; 
+/*      width: 2px; 
       height: 2px; 
       fill:#34332F;
-      /*z-index:0;*/
-/*      box-sizing: border-box; */
       border: 1px solid #74E8CD;
-      /*display: none;*/
-      /*border-radius: 50%;*/
       top: 0px;
       position: absolute;
       z-index:101;
-
+*/
+          border-top: 5px solid transparent;
+          border-bottom: 5px solid transparent;
+  
+          border-left: 7px solid #555;
+          box-sizing: border-box;
       /*left: -5px;*/
     }
 
@@ -469,13 +516,18 @@
     .outputMarker {
       width: 100%;
       /*height: auto;*/
-      z-index:101;
+      z-index:1;
+      left:10px;
+          border-top: 5px solid transparent;
+          border-bottom: 5px solid transparent;
+          border-left: 2px solid #44FF7F;
+
       /*position: absolute;*/
     }
 
     .outputMarker:hover {
       /*border-left: 20px solid #fff000;*/
-      fill:#CCCC66 ;
+      fill:#44FF7F ;
     }
 
     .deleteEl {
