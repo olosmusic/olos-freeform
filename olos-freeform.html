@@ -617,8 +617,12 @@
           if (conn.source.element === srcElem && conn.source.field === srcField) {
             var dstElem = conn.target.element;
             var dstField = conn.target.field;
-            var dstNode = dstElem[dstField];
-            srcNode.connect(dstNode);
+            console.log(dstElem);
+            // do it this way for olos-params
+            self.makeConnection(srcElem, srcField, dstElem, dstField)
+
+            // var dstNode = dstElem[dstField];
+            // srcNode.connect(dstNode);
           }
         }
 
@@ -1171,6 +1175,7 @@
         },
 
         deleteConnection: function(e, details, selection) {
+          var self = this;
           var dst;
           var src;
 
@@ -1207,12 +1212,10 @@
               if (dstElem[dstNode] instanceof Array) {
                 // if destination is an array, make it empty
                 dstElem[dstNode] = [];
-                console.log('arr');
                 this._connections.splice(i,1);
               }
 
               else if (typeof(srcElem[srcNode].disconnect) === 'function'){
-                console.log('functino');
                 srcElem[srcNode].disconnect();
                 this._connections.splice(i,1);
               }
@@ -1241,7 +1244,8 @@
               var dstNode = this._connections[j].target.field;
               var dstElem = this._connections[j].target.element;
               try {
-                srcElem[srcNode].connect(dstElem[dstNode]);
+                self.makeConnection(srcElem, srcNode, dstElem, dstNode);
+                // srcElem[srcNode].connect(dstElem[dstNode]);
               } catch(e) {
                 console.log(e);
               }
@@ -1829,9 +1833,6 @@
         connectorShape.inputConnection = connector;
         connectorShape.destination = dst;
 
-        // make path clickable
-        // connectorShape.addEventListener('onclick',clickedOnConnection);
-
         connectorShape = null;
         // save connections to component source and destination
         if (src[srcPort] instanceof AudioNode && dst[dstPort] instanceof AudioNode) {
@@ -1841,28 +1842,23 @@
           src[srcPort].connect(dst[dstPort]);
         }
 
-        // old solution
-        else if (dst[dstPort] instanceof Array) {
-          console.log('this option0');
-          console.log(src[srcPort]);
-          console.log(dst[dstPort]);
-          // add to destination array
-          // dst[dstPort].push(src[srcPort]);
+        // new solution for matrix connecting to olos-param
+        else if (dst[dstPort] instanceof Object && src[srcPort] instanceof Array) {
+          return true;
         }
 
-        // new solution
-        else if (dst[dstPort] instanceof Object && src[srcPort] instanceof Array) {
-          console.log('array to object');
-          console.log(src.connect);
-          // src.connect(dst[dstPort]);
-          // src[srcPort].connect(dst[dstPort]);
-          // console.log('it is an object');
+        // new solution for audioNode connecting to olos-param
+        // TO DO: disconnect this case
+        else if (src[srcPort] instanceof AudioNode && dst[dstPort] instanceof Object) {
+          console.log('it is a modulator');
+          try {
+            src[srcPort].connect(dst[dstPort].audioParam);
+          } catch(e) {
+            throw 'unable to connectaaaaaaa';
+          }
         }
 
         else {
-          console.log(dst[dstPort]);
-          // ssrc[srcPort]
-          console.log('could not make a connection');
           return false;
         }
 
