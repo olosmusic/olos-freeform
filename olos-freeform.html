@@ -1178,6 +1178,7 @@
           var self = this;
           var dst;
           var src;
+          var reConnect = true;
 
           if (e) {
             e.stopPropagation();
@@ -1223,9 +1224,13 @@
               else if (srcElem.outputConnections instanceof Array) {
                 // find the one with this ID
                 for (var j = 0; j < srcElem.outputConnections.length; j++) {
+                  console.log(srcElem.outputConnections[j].destination.id)
                   if (srcElem.outputConnections[j].destination.id === dstElem.id) {
                     srcElem.outputConnections.splice(j,1);
                     this._connections.splice(i,1);
+                    console.log('spliced!');
+
+                    reConnect = false;
                   }
                 }
               }
@@ -1237,20 +1242,23 @@
             }
           }
 
-          // if srcNode was connected to any other nodes, re-connect them
-          for (var j = 0; j < this._connections.length; j++) {
-            var src = this._connections[j].source;
-            if (src.element === srcElem && src.field === srcNode) {
-              var dstNode = this._connections[j].target.field;
-              var dstElem = this._connections[j].target.element;
-              try {
-                self.makeConnection(srcElem, srcNode, dstElem, dstNode);
-                // srcElem[srcNode].connect(dstElem[dstNode]);
-              } catch(e) {
-                console.log(e);
+          if (reConnect) {
+            // if srcNode was connected to any other nodes, re-connect them
+            for (var j = 0; j < this._connections.length; j++) {
+              var src = this._connections[j].source;
+              if (src.element === srcElem && src.field === srcNode) {
+                var dstNode = this._connections[j].target.field;
+                var dstElem = this._connections[j].target.element;
+                try {
+                  self.makeConnection(srcElem, srcNode, dstElem, dstNode);
+                  // srcElem[srcNode].connect(dstElem[dstNode]);
+                } catch(e) {
+                  console.log(e);
+                }
               }
             }
           }
+
 
           // var marker = e.path[1]; 
           // console.log(marker);
