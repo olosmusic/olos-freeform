@@ -2147,7 +2147,7 @@
             e.preventDefault();
             e.stopPropagation();
             // if bezier was selected, delete that. Otherwise, delete element
-            if (self.bezier) {
+            if (self._highlightedConnection) {
               self.deleteConnection();
             } else if (self._selElement) {
               self._deleteElement(self._selElement.id);
