@@ -525,9 +525,9 @@
       // find the ID of the event target that was clicked
       _deleteEvent: function(e) {
         var compId = e.target.getAttribute('component_id');
-        if(confirm('Do you want to remove this element from the sketch?')) {
+        // if(confirm('Do you want to remove this element from the sketch?')) {
           this._deleteElement(compId);
-        }
+        // }
       },
 
       // delete element by ID
@@ -536,6 +536,11 @@
         var self = this;
         var embeddedEl = self.querySelector('#'+compId);
         var elInArray = self.findElById(compId);
+
+        console.log('deleting ' + embeddedEl + ' based on ' + compId);
+        if (embeddedEl === null) {
+          return;
+        }
 
         // remove element from elements array (which removes it from the shadowDOM)
         var filteredEls = self._elements.filter(function(el) {
@@ -1960,7 +1965,6 @@
           // if we have already set a custom value for this method, display that
           if (typeof (this._customMethods[el.id][methodName]) !== 'undefined'){
             displayCode = this._customMethods[el.id][methodName];
-            console.log('the code already exists! and is...' );
           } else {
             displayCode = String(el[methodName]);
             // remove first and last lines of the function to only show its contents
@@ -2050,8 +2054,6 @@
       _setupMethodDropdown: function(el) {
         var publicMethods = el.publicMethods;
         this._publicMethods = publicMethods;
-        console.log('public methodz');
-        console.log(this._publicMethods);
         if (typeof(this._publicMethods) !== 'undefined' && this._publicMethods.length > 0) {
           this._selectedMethod = this._publicMethods[0];
         }
@@ -2061,10 +2063,12 @@
       _selElementChanged: function() {
 
         // TO DO: if 'undefined' show global methods
-        if (this._selElement === undefined) {
+        if (!this._selElement) {
           // this._selElement = this;
           return;
         }
+
+
 
         // TO DO: figure out why this doesnt show as default
         this._selectedMethod = 'No Method Selected';
@@ -2117,11 +2121,9 @@
 
       _mouseLeaveOutput: function(e) {
         // e.path[0].
-        console.log('leave');
       },
 
       _mouseEnterOutput: function(e) {
-        console.log('enter');
       },
 
       // KEY EVENTS
@@ -2147,7 +2149,7 @@
             // if bezier was selected, delete that. Otherwise, delete element
             if (self.bezier) {
               self.deleteConnection();
-            } else {
+            } else if (self._selElement) {
               self._deleteElement(self._selElement.id);
             }
             break;
@@ -2190,7 +2192,6 @@
             if (j === 0) {
               return
             }
-            console.log(this._elements[j].id);
             this._deleteElement(this._elements[j].id);
           }
 
@@ -2207,7 +2208,6 @@
       },
 
       _connectionsChanged: function() {
-        console.log('connections changed');
         this._drawConnections();
       },
 
